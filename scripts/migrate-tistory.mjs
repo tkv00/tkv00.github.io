@@ -30,8 +30,19 @@ const OUT = path.join(ROOT, 'src/content/posts');
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
 const urlIdx = args.indexOf('--url');
-const SITE = urlIdx !== -1 ? args[urlIdx + 1] : null;
-const XML = args.find((a) => !a.startsWith('--') && a !== SITE);
+const scanIdx = args.indexOf('--scan');
+const valueAfter = (flag, index) => (index !== -1 ? args[index + 1] : null);
+const SITE = valueAfter('--url', urlIdx);
+const scanValue = valueAfter('--scan', scanIdx);
+const parsedScan = Number(scanValue);
+const MAX_SCAN = Number.isInteger(parsedScan) && parsedScan > 0 ? parsedScan : 120;
+
+// 옵션의 값(--url 뒤의 주소, --scan 뒤의 숫자)은 XML 파일 후보에서 제외한다.
+const XML = args.find((a, i) =>
+  !a.startsWith('--') &&
+  (urlIdx === -1 || i !== urlIdx + 1) &&
+  (scanIdx === -1 || i !== scanIdx + 1),
+);
 
 const log = (...a) => console.log(...a);
 const warn = (...a) => console.warn('  ⚠', ...a);
@@ -233,8 +244,7 @@ async function fromSite(base) {
     warn(`RSS 실패 — ${e.message}`);
   }
 
-  const maxScan = Number(args[args.indexOf('--scan') + 1]) || 120;
-  for (let n = 1; n <= maxScan; n++) seen.add(`${origin}/${n}`);
+  for (let n = 1; n <= MAX_SCAN; n++) seen.add(`${origin}/${n}`);
 
   log(`  주소 후보 ${seen.size}개를 확인합니다…`);
 
