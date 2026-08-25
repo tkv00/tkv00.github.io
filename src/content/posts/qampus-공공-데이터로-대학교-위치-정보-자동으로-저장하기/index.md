@@ -1,21 +1,24 @@
 ---
 title: "[Qampus] 공공 데이터로 대학교 위치 정보 자동으로 저장하기"
 date: 2025-07-26
+project: Qampus
 legacyUrl: "https://codekim3570.tistory.com/9"
----**해당 글은 노션에 작성한 글을 티스토리로 재게시했습니다.**
+---
+
+**해당 글은 노션에 작성한 글을 티스토리로 재게시했습니다.**
 
 ## **1\. 배경**
 
 * * *
 
-![](https://blog.kakaocdn.net/dna/b5Yvwp/btsPBKTIOwJ/AAAAAAAAAAAAAAAAAAAAAHC7HYKPhV5Ocr2rNqCl-BqDmpf2mG0eJfie5bAUylXE/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=ERs9z6j5xuHE8b%2Fxv2gwVs5UHRo%3D)
+![](./01-스크린샷-2025-03-22-03-11-50.png)
 
 프론트엔드에서 대학교 지도 부분 파트를 담당하신 분께서 기존 프론트엔드 내부 로컬 파일 형태로 저장하던 대학교의 위도와 경도를 서버에서 정보를 저장한 후 이를 조회하는 방식으로 위도와 경도를 가져오는 편에 대하여 제안을 하셔서 나는 다음과 같은 이유로 서버에서 정보를 저장하는 것이 더 좋은 방법이라고 생각했다.
 
 1.  2024년 우리나라의 대학교 개수는 336개(출처:나무위키)이다. 이렇게 많은 대학교들의 모든 위도와 경도 정보들을 사용자가 입력한 대학교명을 바탕으로 프론트엔드 개발자가 손수 1개씩 로컬 파일에 저장하는 방법은 매우 비효율적이라고 생각했다.
 2.  대학교 이름을 기준으로 서버에서 데이터를 받아와야 하는 주간 순위, 차지율 등과 미리 저장된 위도,경도 정보를 프론트엔드에서 매핑할 경우 , **라우팅 속도의 최적화**를 위해 사용하고 있는 **Next.js**의 이점이 없어질 거라고 생각했다.
 
-![](https://blog.kakaocdn.net/dna/daxR96/btsPAYZdFrJ/AAAAAAAAAAAAAAAAAAAAAFLrFIqmGYY6SjJsa29XHXHa_0hVVspjqV6CasSaM3mU/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=p5IvG64x44kt%2Bb0JsFJBIHTZHRI%3D)
+![](./02-group-2085669392.png)
 
 Qampus 대학교 맵
 
@@ -43,7 +46,7 @@ www.data.go.kr](https://www.data.go.kr/tcs/dss/selectFileDataDetailView.do?publi
 
 * * *
 
-```
+```json
 {
   "page": 0,
   "perPage": 0,
@@ -85,7 +88,7 @@ www.data.go.kr](https://www.data.go.kr/tcs/dss/selectFileDataDetailView.do?publi
 
 #### GetLocationUtil.java
 
-```
+```java
 @Component
 public class GetLocationUtil {
     @Value("${openApi.serviceKey}")
@@ -138,7 +141,7 @@ public class GetLocationUtil {
 
 #### LocationDto.java
 
-```
+```java
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
@@ -162,14 +165,10 @@ public class LocationDto {
 
 * * *
 
-![](https://blog.kakaocdn.net/dna/bGAA0M/btsPCjnN7bK/AAAAAAAAAAAAAAAAAAAAAPkSIXHsCLoU0g70a2JpXGfi9_bYEf_1wUNZlycUviXz/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=6dFKo1RbVA07u4b5k7E%2F9ZTQwtM%3D)
+![](./03-스크린샷-2025-03-22-05-26-58.png)
 
 실제 회원가입이 이루어지는 **CompleteSignupService** 클래스에서 위와 같이 적용하여 클라이언트가 입력한 대학교이름을 바탕으로 위도와 경도 데이터를 **University** 엔티티의 데이터베이스에 저장한다.
 
-![](https://blog.kakaocdn.net/dna/bGTN4z/btsPB27FWB8/AAAAAAAAAAAAAAAAAAAAAIQJ-uSW8XQT2maM1Ropz5QOtmGFV70deIWktuJ9hxib/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=BGlpub0BdtsEuFJdbQy84q206ps%3D)
+![](./04-스크린샷-2025-03-22-05-29-41.png)
 
 실제 로컬DB에 위치 정보가 저장된 모습
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 9 }
-
-공유하기

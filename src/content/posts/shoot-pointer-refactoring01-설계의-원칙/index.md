@@ -1,10 +1,14 @@
 ---
-title: "[Shoot-Pointer] Refactoring01.설계의 원칙"
+title: "[Shoot-Pointer] Refactoring01.설계의 원칙 - 스파게티 코드를 해결할 3가지 레시피"
 date: 2026-01-01
+project: Shoot-Pointer
+tags: ["DDD", "Refactoring", "리팩토링", "MSA", "모놀리스", "헥사고날", "모듈러 모노리스", "리팩토링 수치"]
 legacyUrl: "https://codekim3570.tistory.com/22"
----> "소프트웨어 아키텍처의 목표는 필요한 시스템을 만들고 유지보수하는 데 투입되는 인적 자원을 최소화하는 것이다." - 로버트 C. 마틴 (Robert C. Martin) -
+---
 
-![](https://blog.kakaocdn.net/dna/nsrKJ/dJMcagKWbSL/AAAAAAAAAAAAAAAAAAAAAGiFtkoyKJCygNxQ0J_krxd9c-wGF8mOxM7nsYYJbRqW/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=gJX28yk6xLFIfgQnaqtMlivpQYY%3D)
+> "소프트웨어 아키텍처의 목표는 필요한 시스템을 만들고 유지보수하는 데 투입되는 인적 자원을 최소화하는 것이다." - 로버트 C. 마틴 (Robert C. Martin) -
+
+![](./01-post.png)
 
 게시판 도메인 클래스 다이어그램
 
@@ -18,7 +22,9 @@ legacyUrl: "https://codekim3570.tistory.com/22"
 
 나름의 해결책으로 CQRS 패턴을 흉내내어 QueryController(READ)와 PostCommandController(CUD)를 분리하고 비즈니스 책임 분리를 위해 유효성 검증과 서비스 로직을 **helper ← util(서비스) + validator(유효성 검증)** 구조를 적용했습니다. 하지만 이는 Java의 객체지향이 아니라 절차지향적 코드를 단순히 인터페이스로 포장한 것에 불과했습니다.
 
-![](https://blog.kakaocdn.net/dna/kX7Ad/dJMcaivamBF/AAAAAAAAAAAAAAAAAAAAAERAwHIFhsH9_2b1VFXEvhpET-IlWi_I6sQQ3R_bpmr1/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=fHj1sXZ%2BscJZdrrLOdknafTpqws%3D)![](https://blog.kakaocdn.net/dna/bbyT3H/dJMcafFf5Oq/AAAAAAAAAAAAAAAAAAAAAJbVs0wKS6xlbf6T_PeBEyaFG4tpHAYyMgR494Sxz85l/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=wT74FkzzfIsUoluqIj9cy5yV%2FeQ%3D)
+![](./02-img.jpg)
+
+![](./03-img.webp)
 
 결과는 참담했습니다. 테스트 커버리지를 맞추기 위해 의미 없는 단순 책임을 위임하면서 클래스들의 개수는 늘어갔고 이에 테스트 코드를 2배로 작성해나가야 했습니다. 또한, Elasticsearch의 도입으로 외부 시스템(Infrastructure) 로직이 도메인 영역을 침범하기 시작하며 정말 잘못된 아키텍처라는 것을 하나씩 몸소 체감할 수 있었습니다.
 
@@ -38,12 +44,12 @@ legacyUrl: "https://codekim3570.tistory.com/22"
 
 소스 코드의 복잡도를 나타내는 지표로 프로그램의 제어 흐름을 그래프로 표현하며, 이 그래프의 복잡도 계산식을 적용하여 산출할 수 있습니다.
 
-```
+```text
 계산식 1: 복잡도 V(G) = Edge의 수 - Node 수 + 2
 계산식 2: 복잡도 V(G) = 분기문 개수 + 1
 ```
 
-```
+```java
 void func1(int a,int b){
 	if(a<10){
 		if(b==true){
@@ -55,11 +61,11 @@ void func1(int a,int b){
 
 위와 같은 코드는 아래와 같은 이미지로 제어 흐름을 나타낼 수 있습니다. 제어 흐름 그래프에서 **6개의 Edge**와 **5개의 Node**가 존재하므로 계산식 1을 이용하여 C.C를 계산했을 때 **3**이 나오게 됩니다.
 
-![](https://blog.kakaocdn.net/dna/rL9RL/dJMcaf6j5m9/AAAAAAAAAAAAAAAAAAAAAOHY4_zu9fgrxWkIGqO3ea6N5HUqX8HqhCTnu8ZJ-Bl-/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=vJRdUgMrC45dGDYl3%2B1lo%2Bj59oE%3D)
+![](./04-saxcxz.png)
 
 **Cyclomatic Complexity**가 처음 고안된 1970년대에는 **10 이하**의 복잡도를 유지할 것으로 권고하였습니다만 프로그램의 규모가 커짐에 따라서 현재 마이크로소프트 개발 지침에는 **25이하**를 유지할 것을 권고합니다. 미국 카네기 멜론 대학교의 sw 공학연구소는 복잡도에 따른 위험성을 아래와 같이 평가표를 만들었습니다.
 
-![](https://blog.kakaocdn.net/dna/bNvvr8/dJMcabQnNxP/AAAAAAAAAAAAAAAAAAAAALWNDjKP9GXwBNn9ql_nIXxi3MpsJxgwGdexgH89BDlM/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=XcVAQjct9YOw4hC6yu498IemHEI%3D)
+![](./05-스크린샷-2025-12-04-22-44-34.png)
 
 #### **Cognitive Complexity - 인지 복잡도**
 
@@ -83,7 +89,7 @@ sonarqubekr.atlassian.net](https://sonarqubekr.atlassian.net/wiki/spaces/SON/blo
 
 ### **ShootPointer의 정적 소스 지표 by SonarQube**
 
-![](https://blog.kakaocdn.net/dna/bf0xPW/dJMcaioqTgG/AAAAAAAAAAAAAAAAAAAAAHlxV16Hzla5nvCdx9t3hHctGP_dc5K6Ih3R69enMDd9/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=rsHIg7ronobg1TKOVhjOhjaU6C0%3D)
+![](./06-1767163911384-12540fa2-0dac-47cf-9481-d1e55cbf5a.png)
 
 ShootPointer 측정 지표
 
@@ -97,19 +103,11 @@ ShootPointer 측정 지표
 
 **/domain/post**를 기준으로 작성한 테스트 코드의 Jacoco 커버리지 측정 결과 ( Pull Request #251 기준)는 충격적이었습니다.
 
-![](https://blog.kakaocdn.net/dna/bPcAY4/dJMcahXonj8/AAAAAAAAAAAAAAAAAAAAAIM2qEzYF9pAc4xCkTo8Wped809LYN7iSZoB1HIF0qEn/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=mqzz5BMgDRoO%2BUcZ%2F73UBcGz14U%3D)
+![](./07-스크린샷-2025-12-05-23-11-15.png)
 
-**total Missed Branches**
-
-**total Missed Lines**
-
-**total Missed Methods**
-
-483
-
-220
-
-91
+| total Missed Branches | total Missed Lines | total Missed Methods |
+| --- | --- | --- |
+| 483 | 220 | 91 |
 
 총 **422개**의 테스트 케이스를 작성했음에도 불구하고, 분기 커버리지 중 **483개**의 분기가 테스트가 되지 않았고 **220라인**에서 테스트 코드가 실행되지 않았습니다. 또한, 테스트가 호출되지 않은 메서드 개수가 무려 **91개** 입니다.
 
@@ -127,9 +125,9 @@ ShootPointer는 순수 Java/Spring 외에도 다양한 외부 시스템에 의�
 
 문제는 도메인 로직 내부에 이러한 인프라 구현 기술이 깊숙이 침투해 있다는 점입니다.
 
-![](https://blog.kakaocdn.net/dna/svwA3/dJMcaaqptS3/AAAAAAAAAAAAAAAAAAAAAGRzHrhLwz-8klWc70xx-vxJbcuRcy5CJSS5rNKMee_0/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=v3OWN2yt6m%2F1QjOfy0LJuzcKll4%3D)
+![](./08-스크린샷-2025-12-31-16-45-21.png)
 
-![](https://blog.kakaocdn.net/dna/seEaZ/dJMcadgkbQB/AAAAAAAAAAAAAAAAAAAAABu6IbgN6zSQr89VHtxQIo2MHa3aXGg2q9IkuqOw4pnP/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=4J8Ksbg9A9qvpUNEoC9lnbWAbKA%3D)
+![](./09-스크린샷-2025-12-31-16-47-37.png)
 
 실제로 게시물의 비즈니스 로직을 처리하는 **PostManager 클래스**에서 **Elasticsearch**을 이용하여 가중치를 계산한 후 검색어 정확성 기반 조회 로직을 호출하여 사용하고 있어 비교적 **높은 결합도**를 가지는 모습을 보이고 있습니다. 다른 외부 서비스 로직에 대해서도 위와 동일한 형태로 구현되어 있어 프로젝트 전체적으로 **높은 결합도**를 지니고 있는 점이 존재합니다.
 
@@ -157,7 +155,7 @@ ShootPointer가 목표하는 현실 문제에 대한 솔루션은 동호회 혹�
 
 ### **4) 다중 책임 할당으로 인한 SRP 원칙 위배**
 
-![](https://blog.kakaocdn.net/dna/uH6eu/dJMcaaqptUe/AAAAAAAAAAAAAAAAAAAAAGCwBNCaLrKNLdWsy560OcqMYxpSjw0AT-NCIm0sZdQX/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=eiK0MhX0Rx7jNHI9vzUhSHV5aSg%3D)
+![](./10-스크린샷-2025-12-31-17-28-55.png)
 
 하이라이트 클립 영상에 대해서 유효 검증을 실시하는 **HighlightValidatorImpl 클래스**입니다. 해당 클래스는 아래와 같은 책임을 가지고 있습니다.
 
@@ -171,7 +169,7 @@ ShootPointer가 목표하는 현실 문제에 대한 솔루션은 동호회 혹�
 
 ### **5) 비즈니스 로직의 거대함**
 
-![](https://blog.kakaocdn.net/dna/bJvo7M/dJMcagYr9Su/AAAAAAAAAAAAAAAAAAAAADtlHMCRl8ovbRS2YcgdQkMQdfNM_poSNZdZP_yJnnl9/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=pWSUD44BZfkwuAFJwpDPqFTGmVc%3D)
+![](./11-스크린샷-2025-12-31-16-32-53.png)
 
 위의 코드 사진은 단순하게 게시물의 수정을 처리하는 **PostManager의 update() 메서드**입니다.
 
@@ -229,7 +227,3 @@ ShootPointer가 목표하는 현실 문제에 대한 솔루션은 동호회 혹�
 그래서 저는 IDE를 켜고 코드를 작성하기에 앞서, 잠시 키보드에서 손을 뗐습니다. 대신 **Miro**와 **Draw.io**를 켜고 우리 서비스의 비즈니스 흐름을 시각화하는 작업부터 시작했습니다.
 
 다음 포스팅에서는 코드라는 구현체로 넘어가기 전, 복잡한 요구사항 속에서 길을 잃지 않기 위해 치열하게 고민했던 **이벤트 스토밍(Event Storming)**과 **도메인 모델링(Domain Modeling)**의 과정을 꾹꾹 눌러담아 보여드리겠습니다.
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 22 }
-
-공유하기

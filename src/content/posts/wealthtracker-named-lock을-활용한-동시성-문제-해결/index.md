@@ -1,8 +1,12 @@
 ---
 title: "[WealthTracker] Named Lock을 활용한 동시성 문제 해결"
 date: 2025-07-07
+project: WealthTracker
+tags: ["spring", "mysql", "lock", "동시성 제어", "name lock"]
 legacyUrl: "https://codekim3570.tistory.com/2"
----## **1.배경**
+---
+
+## **1.배경**
 
 * * *
 
@@ -16,7 +20,7 @@ WealthTracker에서는 사용자가 지출 내역을 입력할 때 카테고리�
 
 ExecutorService를 이용하여 100개의 쓰레드를 동시에 실행해보았고 모든 스레드는 "test"라는 새로운 카테고리명을 등록하도록 설정했다. 테스팅 결과 10개의 카테고리 객체가 생성되는 현상이 발생했고, 이는 **Race Condition**으로 DB에 insert요청이 중복 처리되어 발생한 문제였다. 
 
-```
+```java
     /**
      * 시나리오
      * 동시에 같은 카테고리 지출 생성 요청 -> 여러 요청이 모두 카테고리가 존재하지 않는다고 판단하여 중복하여 생성 가능성.
@@ -72,7 +76,7 @@ ExecutorService를 이용하여 100개의 쓰레드를 동시에 실행해보았
     }
 ```
 
-![](https://blog.kakaocdn.net/dna/bx1ql7/btsO6MkGLT6/AAAAAAAAAAAAAAAAAAAAAKLYqhFpiLuTGeEFXa3tAQD7TTs33js4yg_twFDpoKkS/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=m3p8B3vdPjQF7HRuVrIxPfb1D9c%3D)
+![](./01-스크린샷-2025-07-07-08-54-09.png)
 
 테스트 결과
 
@@ -84,7 +88,7 @@ ExecutorService를 이용하여 100개의 쓰레드를 동시에 실행해보았
 
 > 여기서 내 테스트 상황에 적용하면 공유 자원은 같은 카테고리명인 "test"에 100개의 프로세스가 동시에 insert를 시도할 때 같은 이름의 카테고리명으로 여러 개가 저장되는 것이다.
 
-![](https://blog.kakaocdn.net/dna/MteCz/btsO7xOcdL6/AAAAAAAAAAAAAAAAAAAAACzl_e4szGkqyIz6tFTqMWVUcNXixwzjHYVWP5V_3d6j/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=2nf9tfewEEGZXUxnTCt%2Fy1gW3AQ%3D)
+![](./02-cxvxzcv.png)
 
 ## **2.해결 과정**
 
@@ -142,7 +146,7 @@ ExecutorService를 이용하여 100개의 쓰레드를 동시에 실행해보았
 
 10초동안 잠금을 획득하는 것으로 구성하였다.
 
-```
+```java
 @Repository
 public interface LockRepository extends JpaRepository<CategoryExpend,Long> {
     @Query(value = "select get_lock(:key,10)",nativeQuery = true)
@@ -155,7 +159,7 @@ public interface LockRepository extends JpaRepository<CategoryExpend,Long> {
 
 **ExpendCategoryNamedLockFacade** 인터페이스와 구현체를 구현하였다. 사용자가 직접 입력하는 카테고리명에 대해서만 **NAMED\_LOCK**를 수행하도록 한다. 잠금 획득을 실패했을 때는 RuntimeException과 log를 통해 실패 지점을 확인한다.
 
-```
+```java
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -188,16 +192,12 @@ public class ExpendCategoryNamedLockFacadeImpl implements ExpendCategoryNamedLoc
 
 **ExpendServiceImpl** 클래스에서는 아래와 같이 코드를 변경하였다.
 
-![](https://blog.kakaocdn.net/dna/rph3t/btsO6Zkb6kr/AAAAAAAAAAAAAAAAAAAAADv4uiHy7c0bZaAF11_yTWmWgXk4i8X3o7mb9c1NHDfZ/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=tzu6z%2B7uhSLIUg3ABgiI2ARKxBI%3D)
+![](./03-sczxcqw.png)
 
 * * *
 
 > 변경한 코드를 다시 테스트 코드를 실행한 결과 생성된 새로운 카테고리가 1개임을 확인할 수 있다!
 
-![](https://blog.kakaocdn.net/dna/cRcYo1/btsO6di615h/AAAAAAAAAAAAAAAAAAAAAN9twRDvcW2Y4bDKfaQTsqrmJx_JU0PlevHW20T3ID2k/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=F2rRjaT6UiKdUgrCaRNHqM21gPI%3D)
+![](./04-스크린샷-2025-07-07-10-27-55.png)
 
 코드 수정 후 테스트 결과
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 2 }
-
-공유하기

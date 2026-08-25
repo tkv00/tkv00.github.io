@@ -1,8 +1,12 @@
 ---
-title: "[DB-STUDY] 4주차"
+title: "[DB-STUDY] 4주차 - 인덱스"
 date: 2025-12-26
+category: 데이터베이스
+tags: ["데이터베이스", "mysql", "database", "CS", "db", "데이터 베이스"]
 legacyUrl: "https://codekim3570.tistory.com/21"
----Ureca 3기 - 백엔드 대면 교육을 들으며 따로 진행한 약 8주간의 데이터베이스 스터디 내용입니다.
+---
+
+Ureca 3기 - 백엔드 대면 교육을 들으며 따로 진행한 약 8주간의 데이터베이스 스터디 내용입니다.
 
 [https://github.com/Study-Castle/Database\_Study](https://github.com/Study-Castle/Database_Study)
 
@@ -35,7 +39,7 @@ github.com](https://github.com/Study-Castle/Database_Study)
 
 ### B-Tree 인덱스
 
-![](https://blog.kakaocdn.net/dna/3WkPb/dJMcafZvVT2/AAAAAAAAAAAAAAAAAAAAANqcEs-GNapfZ6U2i1g5vTTIpVhiLwZT9RQcM2QA0uAf/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=rVJQKIgc6P0H9rAGEtomnKEwU5k%3D)
+![](./01-다운로드-11-1.png)
 
 B-Tree
 
@@ -50,7 +54,7 @@ B-Tree
 > **Q.** **B-Tree 노드**에는 어떤 값이 저장되는가?  
 > **A.** 각 노드는 데이터를 가지는 것이 아닌 한 개의 \`Page\`(InnoDB 스토리지 엔진이 데이터를 저장하는 기본 단위 / Page내 여러 데이터 존재)를 가진다.
 
-![](https://blog.kakaocdn.net/dna/caO74r/dJMcaacP97c/AAAAAAAAAAAAAAAAAAAAANVSh9AGaTRjO-crx4SletQquyv9yyta574MZxE2OyBc/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=jPFX57ff05848lwhwyDnud7Z0PA%3D)
+![](./02-다운로드-19.png)
 
 #### **인덱스 키 추가**
 
@@ -82,7 +86,7 @@ B-Tree
 
 -   인덱스를 구성하는 키 값의 크기가 커질수록 한 **Page** 내에 저장 가능한 **레코드의 수가 감소**. ⇒ 디스크로 부터 읽어야 하는 횟수의 증가 ⇒ **성능 저하**
 
-```
+```text
 인덱스 페이지에 저장 가능 개수 = Page 크기 / (인덱스 크기 + 자식 노드 주소)
 ```
 
@@ -112,7 +116,7 @@ B-Tree
 
 ### 인덱스 레인지 스캔
 
-```
+```sql
 SELECT *
 
 FROM employees
@@ -120,7 +124,7 @@ FROM employees
 WHERE first_name BETWEEN 'Ebbe' AND 'God';
 ```
 
-![](https://blog.kakaocdn.net/dna/cfCR9U/dJMcafd9GtG/AAAAAAAAAAAAAAAAAAAAAIFBRc9I0vMzSwb7Ci7ak5yuPjeFCgrw_jDiRqZh7aBt/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=uzqaejJ47wWBv9z%2BF8tsUS7VxFU%3D)
+![](./03-다운로드-20.png)
 
 1.  가장 대표적이면서 가장 빠른 방법
 2.  검색해야 할 인덱스 범위가 결정되었을 때 사용.
@@ -132,7 +136,7 @@ WHERE first_name BETWEEN 'Ebbe' AND 'God';
 
 ### 인덱스 풀 스캔
 
-![](https://blog.kakaocdn.net/dna/S3E7Z/dJMcaiWcM2n/AAAAAAAAAAAAAAAAAAAAALhzYuvDvMsZOb0rMS0xMUsSpnRqQx5SDS71rUgzLO2X/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=k3ouzg7ee3OvvbnzmnCsK1AlA44%3D)
+![](./04-다운로드-21.png)
 
 1.  인덱스의 처음부터 끝까지 모두 읽는 방식.
 2.  쿼리 조건절에 사용된 칼럼이 인덱스의 첫 번쨰 칼럼이 아닌 경우
@@ -147,7 +151,7 @@ WHERE first_name BETWEEN 'Ebbe' AND 'God';
 4.  dept\_no 그룹 별로 1번째 레코드의 emp\_no 값만 읽으면 됨.
 5.  WHERE 조건 절 모두 스캔 필요❌ ⇒ 조건 만족하지 않으면 레코드 무시하고 SKIP
 
-```
+```sql
 SELECT 
 	dept_no, MIN(emp_no)
 FROM
@@ -171,7 +175,7 @@ GROUP BY
 
 ### 비교 조건
 
-```
+```java
 SELECT * FROM dept_emp
 WHERE dept_no = 'd002' AND emp_no >= 1004;
 ```
@@ -185,13 +189,11 @@ WHERE dept_no = 'd002' AND emp_no >= 1004;
 -   작업 범위 결정 조건 🔼 ⇒ 쿼리 처리 성능 🔼
 -   필터링 조건 ⇒ 쿼리 처리 성능❌
 
-더보기
-
 **\[ INDEX(dept\_no, emp\_no) \]**
 
 -   **dept\_no** 기준 정렬 ⇒ **emp\_no** 기준 정렬
 
-```
+```text
 (dept_no, emp_no)
 -----------------
 (d001, 1001)
@@ -214,7 +216,7 @@ WHERE dept_no = 'd002' AND emp_no >= 1004;
 
 **\[ INDEX(emp\_no,dept\_no) \]**
 
-```
+```text
 (emp_no, dept_no)
 -----------------
 (1001, d001)
@@ -235,3 +237,148 @@ WHERE dept_no = 'd002' AND emp_no >= 1004;
 
 1.  인덱스에서 **emp\_no ≥ 1004시작 지점 ~ emp\_no = MAX\_VALUE** 범위까지 스캔.
 2.  스캔 범위 내 레코드에서 dep\_no = ‘d002’인 레코드 필터링 ⇒ 결국 1번에서의 스캔한 모든 레코드 탐색.
+
+### 인덱스 가용성
+
+#### **INDEX(first\_name)**
+
+-   주어진 인덱스 페이지
+
+```text
+(first_name   |  주소)
+---------------------
+(A a mer,     | 1001)
+(A a mod,     | 1002)
+(A b delaziz, | 1003)
+(A b delghani,| 1001)
+(A b delkadar,| 1002)
+(A b delwaheb,| 1003)
+(A b dulah,   | 1004)
+(A b dulla,   | 1005)
+(A c hilleas, | 1006)
+...
+```
+
+```sql
+SELECT * FROM employee WHERE first_name LIKE '%mer';
+```
+
+-   인덱스 사용❌
+-   인덱스로 설정한 first\_name에서 왼쪽부터 한 글자씩 비교하면서 일치 레코드를 찾아야함.
+-   But! %mer로 왼쪽 부분 고정❌ ⇒우선 순위가 낮은 뒷부분 값만으로 정렬됨 ⇒ 인덱스 효과 미미.
+
+```text
+(dept_no   |  emp_no   |  주소)
+------------------------------
+d001      |   10239    |     
+d001      |   10259    |     
+d002      |   10042    |
+d002      |   10050.   |
+d002      |.  10059.   |
+d002      |   10080.   |
+d002      |   10132.   |
+d003      |   10005.   |
+d003      |   10013.   |
+...
+```
+
+```sql
+SELECT * FROM dept_emp WHERE emp_no >= 10144;
+```
+
+-   **dept\_no** 컬럼 먼저 정렬 ⇒ **emp\_no** 정렬
+-   **dept\_no** 조건 없이 **emp\_no** 값만으로 검색 ⇒ 인덱스 효율적 사용❌
+
+### 인덱스를 사용할 수 없는 조건
+
+1.  **NOT-EQUAL 비교**
+2.  **LIKE ‘%??’**
+3.  **스토어드 함수 / 다른 연산으로 인덱스 칼럼 변경**
+4.  **NOT-DETERMINISTIC 속성의 스토어드 함수**
+5.  **데이터 타입이 서로 다른 비교(인덱스 컬럼을 변경시키는 경우)**
+6.  **NULL 조건**
+
+## 📘 5. 다양한 인덱스
+
+### 전문 검색 인덱스
+
+-   컬럼에서 키워드로 검색하기 위한 방법
+-   일부 검색에도 **FullText** 인덱스 사용 가능 ⇒ **LIKE 조회보다 성능 우수**
+
+#### **인덱싱 방식**
+
+-   **Stopword**
+    -   내용을 공백, Tab, 문장 기호로 구분자 혹은 사용자 정의 문자열
+    -   나누어진 단어들에 대해 저장 ⇒ 조회 시 완전히 일치한 단어만 포함
+
+```text
+ex)
+1. 우리 집 강아지는 복슬강아지
+2. 우리집 강아지는 복슬강아지
+3. 우리집강아지는복슬강아지
+
+=> "우리" 키워드 포함 조회 -> 1번만 조회됨.
+```
+
+-   **N-gram**
+    -   컬럼의 값을 변형해서 만들어진 값에 대해 인덱스 구축 시 사용.
+
+### 함수 기반 인덱스
+
+-   컬럼의 값을 변형해서 만들어진 값에 대해 인덱스 구축 시 사용.
+
+#### **인덱싱 방식**
+
+-   **가상 칼럼**
+    -   테이블 구조가 변경된다는 단점 존재
+
+```sql
+first_name + last_name 합쳐서 검색 상황
+1. full_name 가상 컬럼 생성
+2. 모든 레코드에 대해 full_name 업데이트
+
+ALTER TABLE user
+	ADD full_name VARCHAR(30) AS (CONCAT(first_naem,' ',last_name)) VIRTUAL,
+	ADD INDEX ix_fullname (full_name);
+```
+
+-   **함수 이용**
+    -   테이블 구조 변경 ❌
+
+```java
+CREATE TABLE user (
+	user_id BIGINT,
+	..
+	INDEX ix_fullname((CONCAT(first_name,' ',last_name))
+);
+```
+
+### 멀티 밸류 인덱스
+
+-   하나의 데이터 레코드가 여러 개의 키 값 가지는 형태
+-   MySQL 8.0부터 JSON 형식 사용 가능.
+
+```sql
+CREATE TABLE user (
+	user_id BIGINT,
+	...
+	credit_info JSON,
+	INDEX mx_creditscores ( (CAST(credit_info->'$.credit_scores' AS UNSIGNED ARRAY)) )
+```
+
+```sql
+INSERT INTO user VALUES (1, 'Matt', 'Lee', '{"credit_scores":[360,353,351]}');
+```
+
+### 클러스터링 인덱스
+
+-   PK 값이 비슷한 레코드끼리 묶어서 저장하는 것.
+-   테이블의 PK에 대해서만 적용
+-   PK 값으로 클러스터링 된 테이블은 PK에 대한 **의존도** ❌
+-   PK 값 변경 시 페이징 이동 발생할 수도 있음.
+
+| 장점 | 단점 |
+| --- | --- |
+| PK로 검색 시 성능 우수 | 클러스터링 키 값 크기 큰 경우 인덱스의 크기 커짐 |
+| 테이블의 모든 세컨더리 인덱스가 클러스터링 키를 가지므로 인덱스만으로 처리되는 경우 많음. | 세컨더리 인덱스를 통해 검색 시 PK로 다시 한 번 검색 → 처리 성능 느림 |
+|  | INSERT할 때 PK에 따라 레코드 위치 결정되므로 처리 성능 느림 |

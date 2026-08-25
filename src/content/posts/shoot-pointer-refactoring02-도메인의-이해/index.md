@@ -1,8 +1,11 @@
 ---
-title: "[Shoot-Pointer] Refactoring02.도메인의 이해"
+title: "[Shoot-Pointer] Refactoring02.도메인의 이해 - 재료와 도구 이해하기"
 date: 2026-01-04
+project: Shoot-Pointer
 legacyUrl: "https://codekim3570.tistory.com/24"
----[\[Shoot-Pointer\] Refactoring01.설계의 원칙 - 스파게티 코드를 해결할 3가지 레시피
+---
+
+[\[Shoot-Pointer\] Refactoring01.설계의 원칙 - 스파게티 코드를 해결할 3가지 레시피
 
 "소프트웨어 아키텍처의 목표는 필요한 시스템을 만들고 유지보수하는 데 투입되는 인적 자원을 최소화하는 것이다." - 로버트 C. 마틴 (Robert C. Martin) -현재 ShootPointer의 게시물 도메인의 전체적
 
@@ -49,7 +52,7 @@ ShootPointer는 제 아이디어에서 출발하여 기획까지 같이 도맡�
 
 이벤트 스토밍은 약속된 색상의 포스트잇을 사용하여 시스템 구성 요소를 정의합니다. ShootPointer 분석에 아래와 같은 사용할 ㅇ요소들은 다음과 같습니다.
 
-![](https://blog.kakaocdn.net/dna/NRvku/dJMb9956NBt/AAAAAAAAAAAAAAAAAAAAAMbav2fJ-rqcLSUPVUtFN2N8ZcUrh0WrUzv39n-5kPjK/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=c4Rs4eGEFJLVatTrXRbXxsHzqKY%3D)
+![](./01-ㅋㅌ.jpg)
 
 **Domain Event (도메인 이벤트)**
 
@@ -100,7 +103,7 @@ DDD에서 사용하는 용어와 함께 이벤트 스토밍에 대한 전반적�
 
 #### **1\. Domain Event 도출**
 
-![](https://blog.kakaocdn.net/dna/mDKje/dJMcacIxPh7/AAAAAAAAAAAAAAAAAAAAAFkhsSWBRNtgAGimb-6DLnGLXT8ALw_9ISkVmlhBQ8Bb/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=m%2B%2Bwdo9bEkM6sSGlXEkJvGRJwj0%3D)
+![](./02-ㄴㅇㅌㅁㄴ.jpg)
 
 가장 먼저 진행한 일은 "시스템 내에 발생한/할 모든 사건"을 과거형 동사로 나열하는 것이었습니다. 기존 기능 명세서를 기반으로 하여 단순히 기능 완료뿐만 아니라 백엔드, 프론트 엔트, openCV 관점에서 발생하는 모든 이벤트를 포착하려고 했습니다. 그 결과, **총 56개**의 Domain Event를 추출할 수 있었습니다. 
 
@@ -112,7 +115,7 @@ DDD에서 사용하는 용어와 함께 이벤트 스토밍에 대한 전반적�
 
 #### **2\. Command  및  Actor 식별하기** 
 
-![](https://blog.kakaocdn.net/dna/cSlvJ9/dJMcaivaFZR/AAAAAAAAAAAAAAAAAAAAAIZBdeqDBXRdpDWV1kUqcNmdqEAF5Aym46Rj2okg-snJ/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=3LrPvd%2FMSqjIItyAJyDI94ZfbnA%3D)
+![](./03-sd.jpg)
 
 이벤트가 있다면 그 원인인 **Command**가 존재합니다.
 
@@ -135,7 +138,7 @@ Command를 실행하는 주체인 Actor를 식별했습니다. 여기서 중요�
 
 #### **3\. Policy 및 외부 시스템 정의**
 
-![](https://blog.kakaocdn.net/dna/kCH2O/dJMcaa402Ks/AAAAAAAAAAAAAAAAAAAAAGTcWGUoeylKbnqzt8eBNcNA8KBQ3OVHkp3wHrrokmUS/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=MQwf2DePZ25qLuOWK0rLHRJZkE8%3D)
+![](./04-sadxzc.jpg)
 
 외부 시스템
 
@@ -145,59 +148,20 @@ Command를 실행하는 주체인 Actor를 식별했습니다. 여기서 중요�
 
 ShootPointer가 의존하지만 직접 제어하지 않거나 별도의 인프라로 격리된 요소들을 식별했습니다. **총 8개**의 외부 시스템이 도출되었습니다.
 
-구분
-
-시스템 명
-
-역할
-
-인증 / 인가
-
-Kakao Auth
-
-카카오톡 소셜 로그인 처리
-
-JWT Handler
-
-내부 토큰 발급 및 검증 로직
-
-미디어 처리
-
-Video Processor
-
-OpenCv 기반 하이라이트 인식 및 추출 라이브러리
-
-Image Processor
-
-등번호 인식을 위한 OCR 라이브러리
-
-저장소
-
-Video Store
-
-처리된 클립을 저장하고 URL 반환
-
-검색
-
-Elasticsearch
-
-정확성 기반 검색 엔진
-
-배치
-
-Ranking Batch
-
-주간 / 월간 랭킹 스냅샷을 생성하고 저장하는 Spring Batch 시스템
-
-조회
-
-Query Service
-
-CQRS 패턴 조회 적용 모델
+| 구분 | 시스템 명 | 역할 |
+| --- | --- | --- |
+| 인증 / 인가 | Kakao Auth | 카카오톡 소셜 로그인 처리 |
+| JWT Handler | 내부 토큰 발급 및 검증 로직 |  |
+| 미디어 처리 | Video Processor | OpenCv 기반 하이라이트 인식 및 추출 라이브러리 |
+| Image Processor | 등번호 인식을 위한 OCR 라이브러리 |  |
+| 저장소 | Video Store | 처리된 클립을 저장하고 URL 반환 |
+| 검색 | Elasticsearch | 정확성 기반 검색 엔진 |
+| 배치 | Ranking Batch | 주간 / 월간 랭킹 스냅샷을 생성하고 저장하는 Spring Batch 시스템 |
+| 조회 | Query Service | CQRS 패턴 조회 적용 모델 |
 
 **2) Policy**
 
-![](https://blog.kakaocdn.net/dna/b8Te3D/dJMcahiLZHl/AAAAAAAAAAAAAAAAAAAAAP1JHEpgDcUEG8Pu_s1GLTogNhpmjFDJCCw1dq-i1KP5/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=phAB1Bp0WByaWsF1A%2BZo5FuQH98%3D)
+![](./05-sfdf.jpg)
 
 **Policy (정책)** Policy는 도메인 이벤트가 발생했을 때 시스템이 수행해야 하는 비즈니스 규칙입니다. 단순히 입력값을 검증하는 '유효성 검사(Validation)'가 아니라, "A라는 사건이 발생하면, B를 수행하라"는 반응형 로직이자, **서로 다른 Bounded Context를 연결하는 접착제**입니다.
 
@@ -255,11 +219,11 @@ Aggregate를 식별하는 과정에서 큰 혼란에 빠지게 되었습니다.�
 
 초기 이벤트 스토밍 과정(1-3과정까지)에서 도메인 모델로 고려되었던 **'랭킹'** 같은 경우, 이번 설계 단계에서는 도메인에서 제외하는 결정을 했습니다.
 
-![](https://blog.kakaocdn.net/dna/cDxW0U/dJMcaaYgWe8/AAAAAAAAAAAAAAAAAAAAAIjrGgB9hMo48jEUot6jbZqIYIDAasN8ohFhZzlXW1TZ/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=DTxTfX28rNPWqYTjHySviqIajtw%3D)
+![](./06-전체-도메인-클래스.jpg)
 
 전체 도메인 모델링
 
-> ****🤔**왜 랭킹을 도메인 모델에서 제외했는가?  
+> ****💡**왜 랭킹을 도메인 모델에서 제외했는가?  
 >   
 > 랭킹** 시스템 같은 경우 실시간 트랜잭션보다는 조회 특성을 지닌 영역입니다. 하이라이트 클립 영상을 OpenCV 서버로부터 Spring이 이벤트를 수신하면 기존 RDB가 아니라 **MongoDB**에 적재할 예정입니다.  
 > 즉, 복잡한 비즈니스 로직보다는 대량의 데이터 집계와 조회의 성능이 중요하므로, 도메인의 영역이 아닌 **CQRS 패턴**의 **Read Model**로 다루는 것이 적합하다고 생각했습니다.
@@ -270,15 +234,15 @@ Aggregate를 식별하는 과정에서 큰 혼란에 빠지게 되었습니다.�
 
 **Community Context**에는 사용자 간의 상호작용이 일어나는 핵심 영역으로 **Post**, **Comment**, **Like** 도메인이 존재합니다.
 
-![](https://blog.kakaocdn.net/dna/TyykS/dJMcaaqqdce/AAAAAAAAAAAAAAAAAAAAAKlSBxEPOi0fuhvCMSrbx3B7CwBrooM9_YUIJ_W-TpCV/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=HzShhnxVtL72OogqpQmdaWEbyrA%3D)
+![](./07-게시물-도메인-클래스.jpg)
 
 Post 도메인 모델
 
-![](https://blog.kakaocdn.net/dna/da4akw/dJMcabizq4I/AAAAAAAAAAAAAAAAAAAAABZQGgJizG83124Gl0XTwTOQb1qUMgz-glA6EoqUp_gc/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=2rbpdOCL7SeXtTb4ib8bFvr7Kp0%3D)
+![](./08-댓글-도메인-클래스.jpg)
 
 Comment 도메인 모델
 
-![](https://blog.kakaocdn.net/dna/AeI8O/dJMcagjRWUs/AAAAAAAAAAAAAAAAAAAAAP1LvIGxEJ0Na6Q1G3gw8NrU4FwJ0GBhWFzW5LotykIU/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=w%2FAK65OL%2BPhak%2FKdt9k2vw42ESk%3D)
+![](./09-좋아요-도메인-클래스.jpg)
 
 Like 도메인 모델
 
@@ -310,7 +274,7 @@ Like 도메인 모델
 
 도메인 메서드는 아래와 같이 주로 사용됩니다.
 
-```
+```java
 public void modify(String title, String content) {...}
 ```
 
@@ -327,7 +291,7 @@ public void modify(String title, String content) {...}
 
 ### **Member Context**
 
-![](https://blog.kakaocdn.net/dna/Fqev7/dJMcafFgStk/AAAAAAAAAAAAAAAAAAAAAGtyXH_GPAW3SwkzRoDeSnPXToXJwKaX7gRrjwgxf_ND/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=ofWyY%2FqUwxosHw8r%2FD47%2Fu6Uqjk%3D)
+![](./10-멤버-도메인-클래스.jpg)
 
 Member 도메인 모델
 
@@ -342,7 +306,7 @@ Member 도메인 설계에서는 기존의 부족함을 극복하고, 객체지�
 
 ### **Media Processing Context**
 
-![](https://blog.kakaocdn.net/dna/AlTJT/dJMcafFg7k1/AAAAAAAAAAAAAAAAAAAAAEPtyNG8V0MTM0PmRpRdUuO8lx1fnlP6GLQINvAXrzWf/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=mRvcuCRRvuXjt5s%2BhKn7XU0WkOg%3D)
+![](./11-영상처리-도메인-클래스.jpg)
 
 ShootingLog 도메인 모델링
 
@@ -356,7 +320,7 @@ ShootPointer의 주요 기능인 만큼 가장 풍부한 도메인 모델을 가
 > **Step 2**: 실제 분석할 농구 경기 영상을 업로드  
 > **Step 3**: 분석 상태 수신  
 >   
-> **🤯 "불완전한 데이터는 어디에 머물러야 하는가?"**  
+> **🤯 "불완전한 데이터는 어디에 머물러야 하는가?"**  
 > Step 1의 등 번호 데이터는 Step 2가 완료될 때까지 갈 곳을 잃게 됩니다. 가장 쉬운 방법은 Step 1 시점에 엔티티를 생성하고 DB에 저장하는 것입니다. 하지만 이는 DDD 설계 원칙에 위배됩니다.  
 >   
 > **불변식(Invariant) 위반  
@@ -393,7 +357,3 @@ ShootPointer의 주요 기능인 만큼 가장 풍부한 도메인 모델을 가
 [\[개발\] id(PK) 직접할당 전략 - Random, UUID, TSID 각각에 대한 비교분석](https://velog.io/@ssssujini99/%EA%B0%9C%EB%B0%9C-idPK-%EC%A7%81%EC%A0%91%ED%95%A0%EB%8B%B9-%EC%A0%84%EB%9E%B5-Random-UUID-TSID-%EA%B0%81%EA%B0%81-%EB%B9%84%EA%B5%90%EB%B6%84%EC%84%9D)
 
 [\[DDD Start!\] 애그리케이트](https://velog.io/@freesky/DDD-Start-%EC%95%A0%EA%B7%B8%EB%A6%AC%EA%B1%B0%ED%8A%B8)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 24 }
-
-공유하기

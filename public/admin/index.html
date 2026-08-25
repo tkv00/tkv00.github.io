@@ -4,47 +4,132 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>깃돌 · 글쓰기</title>
+    <meta name="color-scheme" content="dark" />
+    <title>깃돌 · 로컬 글쓰기</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <style>
-      html { background: #08090c; color-scheme: dark; }
-      body { margin: 0; }
-      #boot {
-        position: fixed; inset: 0; display: flex; flex-direction: column;
-        align-items: center; justify-content: center; gap: 18px;
-        background: #08090c; color: #aab0bc;
-        font-family: 'Pretendard Variable', Pretendard, -apple-system, system-ui, sans-serif;
-        transition: opacity .4s ease;
-      }
-      #boot.gone { opacity: 0; pointer-events: none; }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      #boot .orb { width: 34px; height: 34px; border-radius: 50%;
-        border: 1.5px solid rgba(255,255,255,.1); border-top-color: #d9bc90;
-        animation: spin 1s linear infinite; }
-      #boot b { font-size: 15px; font-weight: 600; color: #eef1f6; letter-spacing: -.01em; }
-      #boot small { font-size: 12.5px; color: #6f7682; line-height: 1.8; text-align: center; max-width: 340px; }
-    </style>
+    <link rel="stylesheet" href="/admin/editor.css" />
+    <script type="module" src="/admin/editor.js"></script>
   </head>
   <body>
-    <div id="boot">
-      <div class="orb"></div>
-      <b>깃돌 글쓰기</b>
-      <small>
-        불러오는 중입니다.<br />
-        <strong style="color:#aab0bc;font-weight:500">Sign In with Token</strong> 을 눌러
-        GitHub 개인 토큰을 넣으면 들어갑니다.
-      </small>
+    <div class="app" id="app" aria-busy="true">
+      <header class="topbar">
+        <a class="brand" href="/" target="_blank" rel="noreferrer" aria-label="블로그 열기">
+          <span class="brand-mark">ㄱ</span>
+          <span><strong>깃돌</strong><small>LOCAL WRITER</small></span>
+        </a>
+        <div class="save-state" id="save-state" role="status">
+          <span class="state-dot"></span><span>불러오는 중</span>
+        </div>
+        <div class="top-actions">
+          <button class="button ghost" id="open-preview" type="button" disabled>새 창 미리보기</button>
+          <button class="button primary" id="save" type="button" disabled>저장 <kbd>⌘S</kbd></button>
+        </div>
+      </header>
+
+      <aside class="post-sidebar">
+        <div class="sidebar-head">
+          <div><strong>글</strong><span id="post-count">0</span></div>
+          <button class="icon-button" id="new-post" type="button" title="새 글">＋</button>
+        </div>
+        <label class="search">
+          <span aria-hidden="true">⌕</span>
+          <input id="search" type="search" placeholder="제목이나 경로 검색" autocomplete="off" />
+        </label>
+        <nav class="post-list" id="post-list" aria-label="글 목록"></nav>
+        <div class="git-hint">
+          <span>다 썼다면</span>
+          <code>git add .</code>
+          <code>git commit -m "글 작성"</code>
+          <code>git push</code>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <section class="editor-pane" aria-label="글 편집">
+          <div class="empty-state" id="empty-state">
+            <span class="empty-symbol">✦</span>
+            <h1>글을 고르거나 새로 만드세요</h1>
+            <p>작성 내용은 내 컴퓨터의 글 폴더에 바로 저장됩니다.</p>
+            <button class="button primary" id="empty-new-post" type="button">새 글 쓰기</button>
+          </div>
+
+          <form id="editor" hidden>
+            <div class="editor-scroll">
+              <div class="post-path"><span>src/content/posts/</span><strong id="post-slug"></strong><span>/index.md</span></div>
+              <input class="title-input" id="title" name="title" type="text" placeholder="제목" required />
+              <textarea class="description-input" id="description" name="description" rows="1" placeholder="한 줄 소개 (선택)"></textarea>
+
+              <details class="meta-card">
+                <summary>글 설정 <span id="meta-summary"></span></summary>
+                <div class="meta-grid">
+                  <label><span>작성일</span><input id="date" name="date" type="date" required /></label>
+                  <label><span>프로젝트</span>
+                    <select id="project" name="project">
+                      <option value="">없음</option><option>Holliverse</option><option>Shoot-Pointer</option>
+                      <option>WealthTracker</option><option>Vero</option><option>Qampus</option><option>TR1L</option>
+                    </select>
+                  </label>
+                  <label><span>카테고리</span>
+                    <select id="category" name="category">
+                      <option value="">없음</option><option>데이터베이스</option><option>자바</option>
+                      <option>스프링</option><option>유레카</option><option>회고</option><option>메모</option>
+                    </select>
+                  </label>
+                  <label class="tags-field"><span>태그</span><input id="tags" name="tags" type="text" placeholder="Astro, Java, 회고" /></label>
+                  <label class="draft-field">
+                    <input id="draft" name="draft" type="checkbox" />
+                    <span><strong>초안으로 보관</strong><small>체크하면 GitHub에 올려도 블로그에는 나타나지 않습니다.</small></span>
+                  </label>
+                </div>
+              </details>
+
+              <div class="body-toolbar">
+                <span>본문 · Markdown</span>
+                <div>
+                  <button class="tool-button" data-wrap="**" type="button" title="굵게"><b>B</b></button>
+                  <button class="tool-button" data-prefix="## " type="button" title="제목">H2</button>
+                  <button class="tool-button" data-prefix="- " type="button" title="목록">―</button>
+                  <button class="tool-button image-button" id="pick-image" type="button">이미지</button>
+                  <input id="image-input" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif,image/svg+xml" multiple hidden />
+                </div>
+              </div>
+              <div class="body-wrap" id="drop-zone">
+                <textarea id="body" name="body" spellcheck="true" placeholder="여기에 글을 쓰세요.&#10;&#10;이미지를 끌어 놓거나 붙여 넣으면 글 폴더에 저장되고 Markdown이 자동으로 들어갑니다."></textarea>
+                <div class="drop-overlay"><span>↓</span><strong>이미지를 놓으세요</strong><small>글 폴더에 자동으로 저장합니다</small></div>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <section class="preview-pane" aria-label="실제 블로그 미리보기">
+          <div class="preview-head"><span><i></i> 실제 블로그 미리보기</span><small id="preview-time">저장하면 갱신됩니다</small></div>
+          <div class="preview-loading" id="preview-loading"><span></span>미리보기를 불러오는 중</div>
+          <iframe id="preview" title="글 미리보기" sandbox="allow-same-origin"></iframe>
+        </section>
+      </main>
     </div>
 
-    <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
-    <script>
-      // CMS 화면이 뜨면 로딩 화면을 치운다
-      const boot = document.getElementById('boot');
-      const hide = () => boot && boot.classList.add('gone');
-      window.addEventListener('load', () => setTimeout(hide, 1200));
-      new MutationObserver((_, ob) => {
-        if (document.querySelector('#nc-root, .sveltia-cms, [class*="sveltia"]')) { hide(); ob.disconnect(); }
-      }).observe(document.body, { childList: true, subtree: true });
-    </script>
+    <dialog id="new-dialog">
+      <form method="dialog" id="new-form">
+        <button class="dialog-close" value="cancel" aria-label="닫기">×</button>
+        <span class="eyebrow">NEW POST</span>
+        <h2>어떤 글을 쓸까요?</h2>
+        <p>새 글은 초안으로 만들어집니다.</p>
+        <label><span>제목</span><input id="new-title" type="text" placeholder="글 제목" required autofocus /></label>
+        <label><span>경로 <small>선택</small></span><input id="new-slug" type="text" placeholder="비우면 제목으로 자동 생성" /></label>
+        <div class="dialog-actions">
+          <button class="button ghost" value="cancel" type="button" id="cancel-new">취소</button>
+          <button class="button primary" value="default" type="submit">글 만들기</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="alert"></div>
+    <div class="fatal" id="fatal" hidden>
+      <span>!</span><h1>로컬 글쓰기 서버에 연결할 수 없습니다</h1>
+      <p id="fatal-message"></p>
+      <code>npm run dev</code>
+      <p>위 명령을 블로그 폴더에서 실행한 뒤 <a href="http://localhost:4321/admin">localhost:4321/admin</a>을 여세요.</p>
+    </div>
   </body>
 </html>

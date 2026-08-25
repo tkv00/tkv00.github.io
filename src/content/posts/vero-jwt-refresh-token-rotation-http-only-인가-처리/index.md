@@ -1,8 +1,11 @@
 ---
 title: "[Vero] JWT+Refresh Token Rotation+HTTP Only 인가 처리"
-date: 2025-07-08
+date: 2025-07-09
+project: Vero
 legacyUrl: "https://codekim3570.tistory.com/3"
----## **1.배경**
+---
+
+## **1.배경**
 
 * * *
 
@@ -56,7 +59,7 @@ legacyUrl: "https://codekim3570.tistory.com/3"
 
 전체 과정은 아래와 같다.
 
-![](https://blog.kakaocdn.net/dna/Xiwh4/btsPa03wHtA/AAAAAAAAAAAAAAAAAAAAADPM5VlmYN6eCU4fUOYFqOjGUK49tK4p8p4g5jkTqvrw/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=1iYb3MimOsx9mzh33%2FOir8c5qZY%3D)
+![](./01-ㅁㄴㅊㅋㅌ.png)
 
 동작 과정
 
@@ -77,7 +80,7 @@ legacyUrl: "https://codekim3570.tistory.com/3"
 
 유저가 로그인 성공 시 **accessToken**과 함께 성공메시지,코드를 반환한다.유저의 이름과 유저의 권한을 함께 반환함으로써 메인 페이지 상단에 위치한 유저 프로필 정보를 불러올 수 있도록 설계하였다.
 
-```
+```java
 @Getter
 @Builder
 public class AccessTokenResponseDto {
@@ -100,7 +103,7 @@ public class AccessTokenResponseDto {
 
 \- 여러 기기에서 로그인한 사용자의 모든 **RefreshToken**을 삭제함으로써 토큰을 만료시킨다.
 
-```
+```java
 @RequiredArgsConstructor
 @Component
 public class RefreshToken {
@@ -138,7 +141,7 @@ public class RefreshToken {
 }
 ```
 
-```
+```java
  @Slf4j
 @Component
 public class JwtUtil {
@@ -193,7 +196,7 @@ public class JwtUtil {
 -   쿠키의 **HttpOnly**설정을 통해 **RefreshToken**를 **Client**측의 쿠키형태로 저장하도록 한다.
 -   **Client**에게 성공메시지 및 코드와 함께 **AccessToken**을 반환한다.
 
-```
+```java
 @Override
     public AccessTokenResponseDto loginMember(MemberLoginDto loginDto, HttpServletResponse response) {
         String email = loginDto.getEmail();
@@ -255,7 +258,7 @@ public class JwtUtil {
 -   현재 사용중인 사용자의 **RefreshToken**를 모두 삭제한다.
 -   **memberRepository**에서 **memberId**를 이용하여 회원의 정보를 토대로 새로운 **AccessToken** 및 **RefreshToken**을 생성한다.
 
-```
+```java
  @Override
     public AccessTokenResponseDto refreshAccessToken(String refreshToken, HttpServletResponse response) {
         //refresh Token 유효성 검증
@@ -316,7 +319,7 @@ public class JwtUtil {
 -   전달받은 **RefreshToken**이 유효한 **JWT**인지 검증한다.
 -   유효하지않은 경우 **RestApiException**를 통해 예외처리한다
 
-```
+```java
 private static void setRefreshToken(String refreshToken, HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .path("/")
@@ -337,11 +340,9 @@ private static void setRefreshToken(String refreshToken, HttpServletResponse res
     }
 ```
 
-더보기
-
 전체 코드 보기
 
-```
+```java
 @Service
 @RequiredArgsConstructor
 @Slf4j

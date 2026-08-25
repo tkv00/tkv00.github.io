@@ -1,12 +1,15 @@
 ---
-title: "[Holliverse] AWS Infra 구축기(3) - CI/CD/CT 설계 및 구현(서비스  배포 -50.9% 절감, 모니터링 서비스 배포"
+title: "[Holliverse] AWS Infra 구축기(3) - CI/CD/CT 설계 및 구현(서비스  배포 -50.9% 절감, 모니터링 서비스 배포 -81.6% 절감)"
 date: 2026-03-27
+project: Holliverse
 legacyUrl: "https://codekim3570.tistory.com/30"
----## **1\. 개요 - 중앙 Infra Repository 하나로 배포 통합**
+---
+
+## **1\. 개요 - 중앙 Infra Repository 하나로 배포 통합**
 
 이번에 인프라를 설계하면서 **Network Architecture** 다음으로 가장 먼저 손댄 영역은 CI/CD/CT였습니다. 개발을 빠르게 시작하고, MVP를 만들고, 실제 E2E 테스트를 반복하려면 결국 가장 먼저 필요한 것은 **지속적으로 배포할 수 있는 구조**였기 때문입니다. 인프라 구조가 아무리 잘 나와 있어도, 변경 사항을 꾸준히 올리고 검증할 수 있는 흐름이 없으면 실제 개발 속도는 생각보다 쉽게 막히게 됩니다.
 
-![](https://blog.kakaocdn.net/dna/dtF9om/dJMcaaY0sTS/AAAAAAAAAAAAAAAAAAAAAHSUfbGNpfaElhLpe-syz19hLduSbjwoyBLXeAY2c0eF/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=s0fXBh9Cc6TjJ4r6qnQ19dGeOEE%3D)
+![](./01-option-subscriptions-flow-2026-03-26-180651.png)
 
 **CI/CD/CT**를 설게하면서, 1가지의 큰 컨셉을 가져가기로 하였다.
 
@@ -28,11 +31,11 @@ legacyUrl: "https://codekim3570.tistory.com/30"
 
 아래 이미지는 CI/CD/CT의 전체 workflow 다이어그램입니다.
 
-![](https://blog.kakaocdn.net/dna/ofXVS/dJMcadOURAA/AAAAAAAAAAAAAAAAAAAAAEspQX4lj52hviTSGqsQ-rO1XuYHIx45sgc31dbw2H1r/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=otBkh8u0vF%2FYp4Vt%2B8TFA2lQ%2BwY%3D)
+![](./02-cicd-쵳ㄷ종.png)
 
 ### **1) CI: 실패를 PR 이후가 아닌 커밋 직전으로 당기기**
 
-![](https://blog.kakaocdn.net/dna/c9DMRC/dJMcaiCJien/AAAAAAAAAAAAAAAAAAAAAKU_9csEpnAYc6j7tYtKsRR0hZygFUesr180rAIJgD8S/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=AnWtQGH1zkyemp6SctFWjMwQUjE%3D)
+![](./03-option-subscriptions-flow-2026-03-26-181817.png)
 
 초기에는 브랜치명이나 커밋 메시지 정책 위반이 주로 PR 단계에서 서버 워크플로를 통해 드러났습니다. 이 구조에서는 잘못된 브랜치를 만들거나 커밋 메시지를 잘못 작성해도 개발자는 PR을 올리고 나서야 실패를 확인할 수 있었습니다. 이것은 단순히 불편한 문제를 넘어서, 피드백이 늦어질수록 수정 비용이 커지고 규칙이 점점 형식적으로 느껴진다는 문제가 있었습니다.
 
@@ -46,7 +49,7 @@ legacyUrl: "https://codekim3570.tistory.com/30"
 
 ### **2) CD: stack deploy에서 service rollout으로 배포 단위를 낮추기**
 
-![](https://blog.kakaocdn.net/dna/cux1My/dJMcahX8DIc/AAAAAAAAAAAAAAAAAAAAAMRDAa9E3wIR42ByclEsJZX7eZq_YDhdwiqEK4FyeA3I/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=%2BGS2bb%2F7myWEnkFH%2BsUSRKJli8E%3D)
+![](./04-ecs-deploy-flow-drawio.png)
 
 초기 중앙 릴리즈 오케스트레이터는 이미 존재했지만, 실제 배포 흐름은 **cdk deploy EcsClusterStack** 기반에 가까웠습니다.  
 즉, 특정 서비스 하나의 이미지만 바뀌더라도 실제 실행 단위는 ECS 관련 스택 재배포에 가까웠습니다. 이 구조는 서비스 하나만 바뀌어도 배포 범위가 넓고, 배포 job마다 Node, Java, CDK CLI 부트스트랩 비용이 반복되며, stack 단위 재배포이기 때문에 변경 영향 범위도 커졌습니다.
@@ -62,7 +65,7 @@ legacyUrl: "https://codekim3570.tistory.com/30"
 
 ### AS-IS
 
-```
+```yaml
 - name: Set up Node.js
   uses: actions/setup-node@v4
 
@@ -87,7 +90,7 @@ legacyUrl: "https://codekim3570.tistory.com/30"
 
 ### TO-BE
 
-```
+```yaml
 - name: Roll out new images via ECS task definition update
   shell: bash
   run: |
@@ -117,13 +120,13 @@ legacyUrl: "https://codekim3570.tistory.com/30"
 
 배포 시간은 **AWS CloudFormation**과 ECS의 원본 이벤트 시각을 기준으로 산출했습니다. **CloudFormation**은 stack의 **UPDATE\_IN\_PROGRESS**와 **UPDATE\_COMPLETE** 차이를 사용했고, ECS는 **PRIMARY deployment**의 **createdAt**과 **steady** **state** 이벤트 차이를 사용했습니다. 개선 지표 역시 AWS CLI 기준으로 확인했습니다.
 
-![](https://blog.kakaocdn.net/dna/wS735/dJMcaaEJYgL/AAAAAAAAAAAAAAAAAAAAAH_vaMIeK8U6tvW87M5c4X65Rc6cSMhEbvstSv5Sv68W/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=qjIjAX9iz6sUCis0N%2BDX74yAJ0g%3D)
+![](./05-스크린샷-2026-03-27-04-35-11.png)
 
 개선 지표
 
 #### **스택 분리: 모니터링은 ECS 클러스터와 같이 배포하지 않기**
 
-![](https://blog.kakaocdn.net/dna/IgB77/dJMcaflJicb/AAAAAAAAAAAAAAAAAAAAAAc8jrOKKcyDyN6Gc7Mu_Y0fYKEOzODWJDL-SkSK4-gT/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=I1uTKfE5b7IdOLZT5cAlWoHcGbU%3D)
+![](./06-option-subscriptions-flow-2026-03-26-181737.png)
 
 배포 속도를 줄인 또 하나의 중요한 포인트는 **변경 성격이 다른 리소스를 같은 배포 단위에 태우지 않는 것**이었습니다. 리소스의 성격이 전혀 다른데도 같은 배포 흐름 안에 묶여 있으면, 작은 변경에도 전체 배포가 필요 이상으로 무거워집니다. 대표적인 예가 모니터링 리소스였습니다.
 
@@ -131,7 +134,7 @@ legacyUrl: "https://codekim3570.tistory.com/30"
 
 ### AS-IS
 
-```
+```java
 private static final String DEPLOY_MODE_DNS = "dns";
 private static final String DEPLOY_MODE_FULL = "full";
 
@@ -143,7 +146,7 @@ case DEPLOY_MODE_DNS, DEPLOY_MODE_FULL -> deployDns(deploymentContext);
 
 ### TO-BE
 
-```
+```java
 private static final String MONITORING_STACK_ID = "MonitoringStack";
 private static final String DEPLOY_MODE_MONITORING = "monitoring";
 
@@ -171,13 +174,13 @@ private static void deployMonitoring(DeploymentContext context) {
 
 이 부분 역시 개선 지표는 AWS CLI 기준으로 확인했습니다.
 
-![](https://blog.kakaocdn.net/dna/dE6541/dJMb99TkPmL/AAAAAAAAAAAAAAAAAAAAAJOfF2e1ehQJMzHhPGqkQeyKiS7aKqoTQ6oVaiNa8VFB/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=%2BtIeILHTAzNMsYD5HKQtmQQ2hXQ%3D)
+![](./07-스크린샷-2026-03-27-04-44-58.png)
 
 개선 지표
 
 ### **3) CT: 빠른 배포를 버티게 하는 공통 품질 게이트**
 
-![](https://blog.kakaocdn.net/dna/rr5kA/dJMcadOUSEX/AAAAAAAAAAAAAAAAAAAAAJsxYsoTm19WLNkQmYhrKAn4j8ycLuFE9uiu9lmTM1vr/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=J8fDyAu0dEmTqetwqEDR5M06uP8%3D)
+![](./08-option-subscriptions-flow-2026-03-26-182056.png)
 
 배포 속도를 높이면 그만큼 더 자주, 더 안정적으로 검증해야 합니다. 그래서 CT에서는 테스트를 단순 실행하는 것이 아니라, **빠른 변경을 감당할 수 있는 최소한의 품질 게이트를 공통화하는 것**에 초점을 맞췄습니다.
 
@@ -202,62 +205,15 @@ private static void deployMonitoring(DeploymentContext context) {
 
 ## **3\. 개선 지표**
 
-지표
-
-기존 방식
-
-개선 방식
-
-개선율
-
-의미
-
-모니터링 변경 배포 시간(평균)
-
-449.1초
-
-82.7초
-
-\-81.6%
-
-모니터링 변경을 ECS 전체 스택 배포와 분리해 더 빠르게 반영
-
-모니터링 배포 처리량
-
-8.0회/시간
-
-43.5회/시간
-
-+442.8%
-
-동일 시간 내 반영 가능한 모니터링 변경 수 대폭 증가
-
-서비스 배포 시간(중앙값)
-
-449.1초
-
-220.4초
-
-\-50.9%
-
-stack deploy 대신 ECS revision rollout으로 전환
-
-서비스 배포 처리량
-
-8.0회/시간
-
-16.3회/시간
-
-+103.7%
-
-서비스 단위 배포 효율 증가
+| 지표 | 기존 방식 | 개선 방식 | 개선율 | 의미 |
+| --- | --- | --- | --- | --- |
+| 모니터링 변경 배포 시간(평균) | 449.1초 | 82.7초 | -81.6% | 모니터링 변경을 ECS 전체 스택 배포와 분리해 더 빠르게 반영 |
+| 모니터링 배포 처리량 | 8.0회/시간 | 43.5회/시간 | +442.8% | 동일 시간 내 반영 가능한 모니터링 변경 수 대폭 증가 |
+| 서비스 배포 시간(중앙값) | 449.1초 | 220.4초 | -50.9% | stack deploy 대신 ECS revision rollout으로 전환 |
+| 서비스 배포 처리량 | 8.0회/시간 | 16.3회/시간 | +103.7% | 서비스 단위 배포 효율 증가 |
 
 [one-year-gap
 
 one-year-gap has 10 repositories available. Follow their code on GitHub.
 
 github.com](https://github.com/one-year-gap)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 30 }
-
-공유하기

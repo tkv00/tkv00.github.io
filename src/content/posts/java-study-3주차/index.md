@@ -1,8 +1,11 @@
 ---
-title: "[JAVA-STUDY] 3주차"
+title: "[JAVA-STUDY] 3주차 - 객체와 클래스"
 date: 2026-01-04
+category: 자바
 legacyUrl: "https://codekim3570.tistory.com/26"
----# 📘 1. Call By Value VS Call By Reference
+---
+
+# 📘 1. Call By Value VS Call By Reference
 
 ### 스택 프레임
 
@@ -11,7 +14,7 @@ legacyUrl: "https://codekim3570.tistory.com/26"
 -   메서드 호출 전 스택프레임을 자바 Stack에 생성 → 메서드 호출
 -   메서드 호출 범위 종료 → 스택에서 제거
 
-![](https://blog.kakaocdn.net/dna/nUUAY/dJMcahJRxZS/AAAAAAAAAAAAAAAAAAAAALJdTbD1q-5pdpugvhUd2oMVf6o35qbbR9EXSZfi01rI/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=YZ7XV98wEQWPu%2B039Xn8W3JRnc4%3D)
+![](./01-ㅌㅊㅍㅌㅊㅍㅌ.png)
 
 ## 1) Call By Value
 
@@ -20,7 +23,7 @@ legacyUrl: "https://codekim3570.tistory.com/26"
 -   변수의 복사본이 전달되며 원래 값은 수정되지 않는다.
 -   실제 인수는 다른 메모리 위치에 생성된다.
 
-```
+```java
 class CallByValue {
 	public static void swap(int x,int y){
 		int temp=x;
@@ -42,13 +45,13 @@ class CallByValue {
 }
 ```
 
-```
+```text
 [ 출력값 ]
 Before : a=10 b=20
 After : a=10 b=20
 ```
 
-![](https://blog.kakaocdn.net/dna/edpXfQ/dJMcahJRx0j/AAAAAAAAAAAAAAAAAAAAAKDP6Yk3QO48A8sUkhZA7ArtN7IjiKJrV1z9RjcQYk7h/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=e1Kw01JGsbJT69B8h2QzZCdVYMM%3D)
+![](./02-ㅌㅊ.png)
 
 1.  변수 a와 b가 각각 메모리 0x0001번지와 0x0005번지에 할당 가정.
 2.  할당된 메모리 변수에 각각 10, 20 값 저장.
@@ -62,7 +65,7 @@ After : a=10 b=20
 -   실제 인수는 같은 메모리 위치에 생성된다.
 -   참조(주소 값)을 직접 넘기기 때문에 **호출자의 변수 = 수신자의 파라미터**
 
-```
+```java
 class CallByAddress {
 	int value;
 	
@@ -90,13 +93,13 @@ class CallByAddress {
 }
 ```
 
-```
+```text
 [ 출력값 ]
 Before : a=10 b=20
 After : a=20 b=10
 ```
 
-![](https://blog.kakaocdn.net/dna/bglloI/dJMcagKXieA/AAAAAAAAAAAAAAAAAAAAAOE7YoksEiB6w_asiPKAkaUw1Wj9QbCwR8Dysxj6Cwc6/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=fk%2BmXOLx8EaNb0g8jLFmLC%2BcoUw%3D)
+![](./03-ㅋㅌㅊㅋㅊ.png)
 
 1.  CallByAddress 타입의 변수 a,b는 객체를 각각 생성하여 0x0001번지와 0x0005번지에 저장된 10과 20의 주소값 저장.
 2.  swap() 메서드 호출 시 인자 a,b는 메모리에 저장된 주소 값 복사 → 매개변수 x,y의 메모리에 저장.
@@ -116,7 +119,7 @@ After : a=20 b=10
 
 -   복사한 객체의 값을 변경 ⇒ 기존 객체의 값도 변경
 
-```
+```java
 public static void main(String[] args) {
 	Student student = new Student("Kim",12);
 	Student copyOfStudent=student;
@@ -131,7 +134,7 @@ public static void main(String[] args) {
 }
 ```
 
-```
+```text
 [ 출력 결과 ]
 name = Kim age = 12
 name = Kim age = 12
@@ -139,7 +142,7 @@ name = Lee age = 12
 name = Lee age = 12
 ```
 
-![](https://blog.kakaocdn.net/dna/bqzoed/dJMcadglhhL/AAAAAAAAAAAAAAAAAAAAADbBrLjlPW0it9XrhIaFzcE6H5txQ3xywH9BKxSUUg7M/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=cniwdBU0tbFSOEjOprfFj6zJek4%3D)
+![](./04-ㅋㅌㅊㅍㅌㅍㅊ.png)
 
 -   **스택 영역**에 **copyOfStudent** 객체를 생성하지만, **Heap** **영역**에 있는 같은 인스턴스를 참조.
 -   **setAge()**를 통해 객체내 변수 변경 시 기존 **student - age** 값도 변경.
@@ -156,7 +159,7 @@ name = Lee age = 12
 
 \[ clone()메서드를 재정의 \]
 
-```
+```java
 class Student implements Cloneable{
 	String name;
 	int age;
@@ -179,7 +182,7 @@ class Student implements Cloneable{
 
 **2\. 생성자**
 
-```
+```java
 class Student {
 	String name;
 	int age;
@@ -195,7 +198,7 @@ class Student {
 
 **3\. 팩토리 메서드**
 
-```
+```java
 class Student {
 	String name;
 	int age;
@@ -214,7 +217,7 @@ class Student {
 
 **4\. 1차원 배열 복사**
 
-```
+```java
 //1. Object.clone()
 int[] arr={1,2,3,4}
 int[] copy=arr.clone();
@@ -236,7 +239,7 @@ System.arrayCopy(arr,0,copy,0,arr.length);
 
 **5\. 2차원 배열 복사**
 
-```
+```java
 //1. 2중 for문
 int[][] arr={{1,2,3},{4,5,6},{7,8,9}};
 int[][] copy=new int[arr.length][arr[0].length];
@@ -268,7 +271,7 @@ for(int row=0;row<copy.length;row++){
 
 -   가져온 타입에 대해 하나씩 다운캐스팅을 진행 → 성능 낭비
 
-```
+```java
 Apple[] arr = { new Apple() , new Apple() };
 FruitBox box = new FruitBox(arr);
 
@@ -279,7 +282,7 @@ Apple apple3 = (Apple) box.getFruit(2);
 
 -   But ! 제너릭은 미리 타입을 지정 및 제한하기 때문에 타입 검사에 들어가는 메모리를 줄일 수 있음.
 
-```
+```java
 FruitBox<Apple> box = new FruitBox<>(arr);
 
 Apple apple1 = box.getFruit(0);
@@ -289,7 +292,7 @@ Apple apple3 = box.getFruit(2);
 
 **2\. 컴파일 타입 검사를 통해 예외 방지**
 
-```
+```java
 class Apple {}
 class Banana {}
 
@@ -306,7 +309,7 @@ class FruitBox {
 }
 ```
 
-```
+```java
 public void main(String[] args){
 	Apple[] arr = { new Apple() , new Apple() };
 	
@@ -321,7 +324,7 @@ public void main(String[] args){
 
 -   제너릭 타입을 사용시 컴파일 단계에서 제거 가능
 
-![](https://blog.kakaocdn.net/dna/dgPQFT/dJMcabXa8kP/AAAAAAAAAAAAAAAAAAAAAP4Q6rr7w4CCcK1dcGhPT9YG8-2W1gAxC0eca1vMgn4l/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=j3pH6Z5vLzgCKbII6n1dGgw%2FT14%3D)
+![](./05-ㅌㅊㅍㅋㅌㅍ.png)
 
 ### 제너릭 타입
 
@@ -357,7 +360,7 @@ public void main(String[] args){
 
 -   쉼표를 사용하여 복수 타입의 파라미터를 지정 가능.
 
-```
+```java
 class Apple{}
 class Banana{}
 
@@ -374,33 +377,14 @@ class FruitBox<T,U> {
 
 ### 네이밍
 
-타입
-
-설명
-
-<T>
-
-타입
-
-<E>
-
-요소
-
-<K>
-
-키
-
-<V>
-
-리턴 값 또는 매핑된 값
-
-<N>
-
-숫자
-
-<S,U,V>
-
-2번째, 3번째, 4번째에 선언된 타입
+| 타입 | 설명 |
+| --- | --- |
+| <T> | 타입 |
+| <E> | 요소 |
+| <K> | 키 |
+| <V> | 리턴 값 또는 매핑된 값 |
+| <N> | 숫자 |
+| <S,U,V> | 2번째, 3번째, 4번째에 선언된 타입 |
 
 ## 2) 제너릭 타입 소거
 
@@ -446,7 +430,7 @@ class FruitBox<T,U> {
 -   <T extends String> ⇒ 하위의 T는 String으로 치환.
 -   <T> ⇒ Object로 치환
 
-```
+```java
 //============= before ==============
 class Example<T extends String> {
 	List<T> list =new ArrayList<>();
@@ -476,7 +460,7 @@ class Example{
 
 ***2\. 제너릭 타입 소거 후 타입이 일치하지 않는 곳은 형변환을 추가.***
 
-```
+```java
 //============= before ==============
 class Example<T extends String> {
 	List<T> list =new ArrayList<>();
@@ -510,7 +494,7 @@ class Example{
 -   모든 클래스의 최상위 **부모 클래스**
 -   클래스에 상속 받을 부모 클래스가 존재하지 않다면, Java 내에서 묵시적으로 **Object 클래스**를 상속받는다.
 
-```
+```java
 public class Parent {
 	public void parentMethod(){
 		System.out.println("Parent.parentMethod");
@@ -535,13 +519,13 @@ public class ObjectMain{
 }
 ```
 
-```
+```text
 Child.childMethod
 Parent.parentMethod
 lang.object.Child@x001
 ```
 
-![](https://blog.kakaocdn.net/dna/0yAy2/dJMcaajFfC4/AAAAAAAAAAAAAAAAAAAAAIEhM1763PNhorxh6BRc8dYJ0S3XgPKTLaEYWHWKMiIG/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=WreENLXde8p8tAVSo%2FMssvJnJeY%3D)
+![](./06-ㄴㄹㄴㅇㄹㄴㅇㄹ.png)
 
 1.  child.toString()를 호출
 2.  Child 클래스에서 toString() 메서드를 찾는다. 없으므로 부모 타입으로 올라가서 찾는다.
@@ -563,12 +547,12 @@ lang.object.Child@x001
 -   String은 char, int와 다르게 primitive type이 아닌 reference type변수로 분류
 -   String 객체의 값은 변경할 수 없다.
 
-```
+```java
 String a = "hello";
 a = a + "world";
 ```
 
-![](https://blog.kakaocdn.net/dna/dnrcR2/dJMcabizHZY/AAAAAAAAAAAAAAAAAAAAAKerOpYSLxqEGtn6plWaZq3BIouITfI1_fvgZXPxRcH9/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=dwDITQq%2FSrR36r%2BhmVZHp6ggVOs%3D)
+![](./07-ㅌㅋㅊㅋㅌㅊㅋㅊ.png)
 
 ### String Pool
 
@@ -576,7 +560,7 @@ a = a + "world";
 
 ⇒ new를 통해 String 객체를 생성하면 String Pool를 사용하지 않아 기존에 있던 문자열을 재사용하는 것이 아니라 메모리에 새로운 객체가 생성된다.
 
-```
+```java
 String s1="string";
 String s2="string";
 
@@ -601,7 +585,7 @@ System.out.print(s1==s2); //false
 
 ***1\. 문자열 연결 ❌ / StringBuilder ✅***
 
-```
+```java
 String result = "";
 
 for(int i=0;i<100;i++){
@@ -611,7 +595,7 @@ for(int i=0;i<100;i++){
 
 -   위와 같은 코드는 for문이 도는 동안 계속해서 새로운 String 객체가 생성된다.
 
-```
+```java
 StringBuilder sb=new StringBuilder();
 
 for(int i=0;i<100;i++){
@@ -628,13 +612,13 @@ String result = sb.toString();
 
 ***3\. equals() 비교 시 NPE 방지***
 
-```
+```java
 someString.equals("value"); //someString이 null이면 🚨NPE🚨 발생
 ```
 
 -   NPE 발생의 방지를 위해 아래와 같은 상수 값을 먼저 작성하는 안전한 코드로 작성.
 
-```
+```java
 "value".equals(someString);
 ```
 
@@ -679,7 +663,7 @@ someString.equals("value"); //someString이 null이면 🚨NPE🚨 발생
 
 해당 클래스가 인스턴스화된 상태이어야 함.
 
-```
+```java
 public static void main(String[] args){
 	String str=new String("Class");
 	
@@ -692,7 +676,7 @@ public static void main(String[] args){
 
 인스턴스가 존재하지 않고, 컴파일된 클래스 파일 존재 시 Class 객체를 바로 얻을 수 있음.
 
-```
+```java
 public static void main(String[] args){
 	String str=new String("Class");
 	
@@ -706,7 +690,7 @@ public static void main(String[] args){
 -   컴파일된 클래스 파일이 존재하는 경우 : 클래스 이름만으로 Class 객체를 반환 받을 수 있지만, 클래스 도메인을 자세하게 적어야 함.
 -   메모리 절약 가능.
 
-```
+```java
 public static void main(String[] args){
 	try{
 		Class<?> cls = Class.forName("java.lang.String");
@@ -744,7 +728,7 @@ public static void main(String[] args){
 -   **getMethod()** : public 메서드 접근 시 사용.
 -   **getDeclaredMethod()** : 클래스에 선언된 모든 메서드 접근 시 사용.
 
-```
+```java
 class Animal {
 	public void publicRun() {
 		System.out.println("publicRun");
@@ -774,7 +758,7 @@ privateRun.invoke(animal);
 -   **getConstructor()** : public 생성자 접근 시 사용.
 -   **getDeclaredConstructor()** : 클래스에 선언된 모든 메서드 접근 시 사용.
 
-```
+```java
 class Animal {
 	public Animal(){}
 	private Animal(String arg){}
@@ -796,7 +780,7 @@ Animal animal2 = (Animal) privateConstructor.newInstance("arg");
 -   **getField()** : public 생성자 접근 시 사용.
 -   **getDeclaredField()** : 클래스에 선언된 모든 메서드 접근 시 사용.
 
-```
+```java
 class Animal {
 	public int publicField;
 	private int privateField;
@@ -823,7 +807,3 @@ publicField.set(animal,20);
 //private 변수 수정
 privateField.set(animal,40);
 ```
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 26 }
-
-공유하기

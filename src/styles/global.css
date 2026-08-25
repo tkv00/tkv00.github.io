@@ -135,6 +135,12 @@ p { text-wrap: pretty; }
 
 .main { flex-grow: 1; min-width: 0; }
 
+/* 로컬 글쓰기 화면의 iframe에서는 글 본문만 보여준다. */
+body.editor-preview { --rail-w: 0px; background: #08090c; }
+body.editor-preview .article { padding-top: 40px; }
+body.editor-preview .crumb { display: none; }
+body.editor-preview .progress { left: 0; }
+
 /* 사이드바를 뺀 나머지 공간의 한가운데에 글을 놓는다 */
 .wrap { max-width: 920px; margin-inline: auto; padding: 76px 96px 0; }
 
@@ -365,6 +371,65 @@ p { text-wrap: pretty; }
   transition: color 0.25s, background-size 0.3s; }
 .prose a:hover { color: #f0d8b0; background-size: 100% 2px; }
 
+/* 한 줄로 단독 배치한 외부 링크는 북마크 카드로 보여준다. */
+.prose > .bookmark-card {
+  display: grid; grid-template-columns: minmax(0, 1fr) 112px; min-height: 122px;
+  overflow: hidden; border: 1px solid var(--line); border-radius: 9px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012));
+  color: inherit; box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+  transition: transform 0.35s var(--ease), border-color 0.35s, background 0.35s, box-shadow 0.35s;
+}
+.prose > .bookmark-card:hover {
+  color: inherit; border-color: rgba(217, 188, 144, 0.42);
+  background: linear-gradient(135deg, rgba(217, 188, 144, 0.055), rgba(255, 255, 255, 0.016));
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2); transform: translateY(-2px);
+}
+.bookmark-content {
+  display: flex; min-width: 0; flex-direction: column; justify-content: center;
+  padding: 20px 22px; line-height: 1.55;
+}
+.bookmark-title {
+  overflow: hidden; color: #e7ebf1; font-size: 15.5px; font-weight: 600;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.bookmark-description {
+  display: -webkit-box; overflow: hidden; margin-top: 6px; color: var(--t2);
+  font-size: 13px; font-weight: 300; line-height: 1.55;
+  -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+}
+.bookmark-site {
+  display: flex; align-items: center; gap: 7px; overflow: hidden; margin-top: 11px;
+  color: var(--t3); font-family: var(--mono); font-size: 11px; line-height: 1.2;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.bookmark-dot {
+  display: inline-flex; width: 17px; height: 17px; flex: 0 0 auto; align-items: center;
+  justify-content: center; border: 1px solid var(--line); border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04); color: var(--acc); font-size: 9px; font-weight: 700;
+}
+.bookmark-visual {
+  position: relative; display: grid; place-items: center; overflow: hidden;
+  border-left: 1px solid var(--line2);
+  background:
+    radial-gradient(circle at 65% 28%, rgba(217, 188, 144, 0.19), transparent 34%),
+    linear-gradient(145deg, #16191f, #0f1116);
+}
+.bookmark-visual::before {
+  position: absolute; width: 82px; height: 82px; border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 50%; content: ''; transform: translate(28px, 30px);
+}
+.bookmark-monogram {
+  color: rgba(217, 188, 144, 0.62); font-family: var(--mono); font-size: 34px;
+  font-weight: 600; text-shadow: 0 0 28px rgba(217, 188, 144, 0.13);
+  transition: color 0.35s, transform 0.35s var(--ease);
+}
+.bookmark-arrow {
+  position: absolute; top: 12px; right: 12px; display: flex; color: var(--t3);
+  opacity: 0.7; transition: color 0.3s, transform 0.35s var(--ease), opacity 0.3s;
+}
+.bookmark-card:hover .bookmark-monogram { color: var(--acc); transform: scale(1.08); }
+.bookmark-card:hover .bookmark-arrow { color: var(--acc); opacity: 1; transform: translate(2px, -2px); }
+
 .prose ul, .prose ol { padding-left: 1.3em; }
 .prose li { margin-top: 10px; }
 .prose li::marker { color: var(--acc-soft); }
@@ -576,6 +641,12 @@ pre.gitdol-code .line.cal-note {
   .row .dt { width: auto; padding-top: 0; padding-bottom: 8px; }
   .row .arw { display: none; }
   .prose { font-size: 16px; }
+  .prose > .bookmark-card { grid-template-columns: minmax(0, 1fr) 82px; min-height: 112px; }
+  .bookmark-content { padding: 17px 18px; }
+  .bookmark-title { font-size: 14.5px; }
+  .bookmark-description { font-size: 12.5px; -webkit-line-clamp: 2; }
+  .bookmark-monogram { font-size: 27px; }
+  .bookmark-arrow { top: 9px; right: 9px; }
   .pn { grid-template-columns: minmax(0, 1fr); }
   .pn a.next { align-items: flex-start; text-align: left; }
   .top { right: 18px; bottom: 18px; }

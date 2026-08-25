@@ -1,8 +1,11 @@
 ---
 title: "[Qampus] AWS S3 이미지 업로드 테스트 코드"
 date: 2025-07-26
+project: Qampus
 legacyUrl: "https://codekim3570.tistory.com/8"
----**해당 글은 노션에 작성한 글을 티스토리로 재게시했습니다.**
+---
+
+**해당 글은 노션에 작성한 글을 티스토리로 재게시했습니다.**
 
 ## **1\. 배경**
 
@@ -19,19 +22,19 @@ SWYP 8기의 서비스의 제출 및 시연이 2주정도밖에 남지 않았다
 
 -   사용 라이브러리
 
-```
+```groovy
 implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.3.0'
 implementation 'com.amazonaws:aws-java-sdk-s3:1.12.781'
 ```
 
-![](https://blog.kakaocdn.net/dna/AZWkh/btsPzPbod3d/AAAAAAAAAAAAAAAAAAAAAGJ1L6iPnWkF0i_jmef-NvZ5tgVJPN-M51dPxWwQPpzP/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=8XzIKWhqMYOtPXEcOKjEgihX3zI%3D)
+![](./01-스크린샷-2025-02-19-15-42-14.png)
 
 Spring Cloud AWS Starter 라이브러리
 
 -   **NCP(Naver Cloud Platform)** 개인 설정을 통해 **secretKey**와 **accessKey**를 발급을 받고 아래와 같이 버킷을 생성한 후 디렉토리를 구성.
 -   **Qampus** 에서 이미지를 사용하는 부분이 질문과 답변이므로 **question**과 **answer**로 디렉토리를 설정.
 
-![](https://blog.kakaocdn.net/dna/mDCn5/btsPzTLpe3W/AAAAAAAAAAAAAAAAAAAAAA63KVk_eEbSqMMEiJOPs_bGXa9GGHKWM56CnI8069Ll/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=d3zV3DGd59vqBcX2JicSnl%2FvdVY%3D)
+![](./02-ㄴㅇㄹ.png)
 
 NCP 사진 디렉토리 설정
 
@@ -39,7 +42,7 @@ NCP 사진 디렉토리 설정
 
 ### **서비스 로직**
 
-```
+```java
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
@@ -90,7 +93,7 @@ public class ImageServiceImpl implements ImageService {
 -   List형식의 이미지를 제공받아 for문을 통해 모든 이미지 파일의 메타데이터를 저장한다.
 -   UUID형식으로 이미지의 파일명을 생성하고, **AWS S3 라이브러리**의 **PutObjectRequest** 객체를 이용하여 생성한 파일이름과 함께 파일을 업로드한 후 업로드한 파일이름을 다른 서비스 계층에서 DB에 저장하기 위해 String 리스트로 반환한다.
 
-![](https://blog.kakaocdn.net/dna/KYeU8/btsPAYkGCZP/AAAAAAAAAAAAAAAAAAAAAGYjxs--UvJBZ0DXPqO5wKwk_8Ryx262fYnS60d1ob-h/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=Pl%2BvVX9sCT95iZI25h1i7%2B6b0Fg%3D)
+![](./03-스크린샷-2025-02-19-16-02-32.png)
 
 업로드된 이미지
 
@@ -105,14 +108,14 @@ public class ImageServiceImpl implements ImageService {
 1.  기존 외부라이브러리 구현이 되어 있는 **AWS S3 Client**를 직접 **service interface**와 **serviceImpl**로 분할하여 구현한다.
     -   기존 **AmazonClient** 대신 직접 구현한 **AmazonS3Service**를 주입한다
 
-```
+```java
 public interface AmazonS3Service {
     void putObject(PutObjectRequest request);
     URL getUrl(String bucketName, String fileName);
 }
 ```
 
-```
+```java
 @RequiredArgsConstructor
 @Service
 public class AmazonServiceImpl implements AmazonS3Service{
@@ -130,7 +133,7 @@ public class AmazonServiceImpl implements AmazonS3Service{
 }
 ```
 
-```
+```java
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
@@ -174,7 +177,7 @@ public class ImageServiceImpl implements ImageService {
 
 2\. 테스트 코드는 아래와 같이 성공케이스와 실패케이스로 분할하여 구성하였다.
 
-```
+```java
 @SpringBootTest
 class ImageServiceImplTest {
 
@@ -245,7 +248,7 @@ class ImageServiceImplTest {
 
 -   실제 AWS S3 이미지 API를 호출하여 비용을 소모하는 방법보다 **@MockitoBean**를 이용하여 가짜 의존성을 주입하여 테스트를 진행했다.
 
-```
+```java
 when(multipartFile.getContentType()).thenReturn("image/jpeg");
         when(multipartFile.getSize()).thenReturn((long)fileContent.length);
         when(multipartFile.getOriginalFilename()).thenReturn(FILE_NAME);
@@ -255,7 +258,3 @@ when(multipartFile.getContentType()).thenReturn("image/jpeg");
 -   **MutipartFile**를 직접 만들지 않고 **@Mock**를 이용하여 가짜객체로 사용함으로써 실제 서비스에 작동할 때 호출되는 메서드에 대해 예측값들을 미리 넣어준다.
 -   서비스단에서 **AmazonS3Service**의 메서드 **putObject**, **getUrl**이 각각 1번씩 호출되었는지 확인하고 성공 케이스 테스트를 종료한다.
 -   이미지 업로드 예외인 **IOException**값을 **RestApiException**으로 예외를 제대로 던지는지 확인하고 해당 예외처리 메시지를 확인하며 테스트를 종료한다.
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 8 }
-
-공유하기

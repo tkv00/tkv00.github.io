@@ -15,6 +15,7 @@ const {
   image,
   noindex = false,
   quiet = kind === 'article',
+  embed = false,
 } = Astro.props;
 
 const path = Astro.url.pathname;
@@ -80,11 +81,11 @@ const ld = {
     <link rel="alternate" type="application/rss+xml" title={site.title} href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://giscus.app" />
+    {!embed && <link rel="preconnect" href="https://giscus.app" />}
 
     <script type="application/ld+json" set:html={JSON.stringify(ld)} is:inline />
 
-    {analytics.goatcounter && (
+    {analytics.goatcounter && !embed && (
       <script
         is:inline
         async
@@ -94,19 +95,19 @@ const ld = {
     )}
   </head>
 
-  <body>
-    <Sky quiet={quiet} />
+  <body class:list={{ 'editor-preview': embed }}>
+    {!embed && <Sky quiet={quiet} />}
 
     <div class="shell">
-      <Sidebar path={path} />
+      {!embed && <Sidebar path={path} />}
       <main class="main">
         <slot />
       </main>
     </div>
 
-    <a class="top" href="#" aria-label="맨 위로">
+    {!embed && <a class="top" href="#" aria-label="맨 위로">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6" /><path d="M6 12l6-6 6 6" /></svg>
-    </a>
+    </a>}
 
     <script is:inline>
       // ── 코드 복사 ─────────────────────────────────────────
@@ -171,7 +172,7 @@ const ld = {
       paint();
     </script>
 
-    {analytics.goatcounter && (
+    {analytics.goatcounter && !embed && (
       <script is:inline define:vars={{ code: analytics.goatcounter }}>
         // 방문자 수를 사이드바에 채워 넣는다 (GoatCounter 공개 통계 API)
         (async () => {

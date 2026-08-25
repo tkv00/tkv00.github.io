@@ -1,8 +1,12 @@
 ---
-title: "[Holliverse] 이탈률 구현 (3)"
+title: "[Holliverse] 이탈률 구현 (3) - Burst Test와 첫 번째 정합성 깨짐"
 date: 2026-04-01
+project: Holliverse
+tags: ["스레드", "thread", "Executor", "burst", "성능 개선", "AbortPolicy"]
 legacyUrl: "https://codekim3570.tistory.com/40"
----## **1\. 개요**
+---
+
+## **1\. 개요**
 
 이번 포스팅에서는 앞선 포스팅에서 설계한 5가지 테스트 시나리오 중 **Burst Test**를 다룬다.
 
@@ -36,83 +40,30 @@ codekim3570.tistory.com](https://codekim3570.tistory.com/entry/Holliverse-%EC%9D
 
 **Burst Test**의 입력 조건은 아래와 같다.
 
-**항목**
-
-**값**
-
-대상 API
-
-customer /api/v1/customer/user-logs
-
-tokenPoolSize
-
-5,000
-
-activeCohortSize
-
-5,000
-
-expectedTotalRequests
-
-27,000
-
-expectedAverageEventsPerMember
-
-5.4
-
-peakRps
-
-200
-
-duration
-
-3분
-
-objective
-
-5k active cohort under short burst up to 200 RPS
+| 항목 | 값 |
+| --- | --- |
+| 대상 API | customer /api/v1/customer/user-logs |
+| tokenPoolSize | 5,000 |
+| activeCohortSize | 5,000 |
+| expectedTotalRequests | 27,000 |
+| expectedAverageEventsPerMember | 5.4 |
+| peakRps | 200 |
+| duration | 3분 |
+| objective | 5k active cohort under short burst up to 200 RPS |
 
 실행 결과 요약은 아래와 같다.
 
-**지표**
-
-**값**
-
-sentEvents
-
-19,704
-
-intendedUniqueEvents
-
-19,704
-
-injectedDuplicates
-
-0
-
-uniqueCompareEvents
-
-9,854
-
-uniqueChangeEvents
-
-5,910
-
-uniquePenaltyEvents
-
-3,940
-
-acceptedRate
-
-1.0
-
-failedRate
-
-0.0
-
-p95
-
-3567.3706ms
+| 지표 | 값 |
+| --- | --- |
+| sentEvents | 19,704 |
+| intendedUniqueEvents | 19,704 |
+| injectedDuplicates | 0 |
+| uniqueCompareEvents | 9,854 |
+| uniqueChangeEvents | 5,910 |
+| uniquePenaltyEvents | 3,940 |
+| acceptedRate | 1.0 |
+| failedRate | 0.0 |
+| p95 | 3567.3706ms |
 
 Burst Test는 아래와 같은 2가지의 문제점을 확인할 수 있었다.
 
@@ -171,7 +122,7 @@ Burst Test는 아래와 같은 2가지의 문제점을 확인할 수 있었다.
 
 HTTP 성공률이 아니라 실제 **member\_action\_feature**에 누적된 count 합계를 확인해야 한다.
 
-```
+```sql
 holliverse=> SELECT COALESCE(SUM(maf.comparison_cnt), 0) AS compare_total,
 holliverse-> COALESCE(SUM(maf.change_mobile_cnt), 0) AS change_total,
 holliverse-> COALESCE(SUM(maf.checked_penalty_fee_cnt), 0) AS penalty_total,
@@ -191,61 +142,18 @@ holliverse-> WHERE fss.feature_type = 'MEMBER_ACTION_FEATURE';
 
 실제 K6 결과 summary와 비교하면 아래와 같다.
 
-유형
+| 유형 | K6 결과 | DB 합계 | 차이 |
+| --- | --- | --- | --- |
+| compare | 9,854 | 9,569 | -285 |
+| change | 5,910 | 5,763 | -147 |
+| penalty | 3,940 | 3,836 | -104 |
+| total | 19,704 | 19,168 | -536 |
 
-K6 결과
-
-DB 합계
-
-차이
-
-compare
-
-9,854
-
-9,569
-
-\-285
-
-change
-
-5,910
-
-5,763
-
-\-147
-
-penalty
-
-3,940
-
-3,836
-
-\-104
-
-total
-
-19,704
-
-19,168
-
-\-536
-
-항목
-
-반영률
-
-compare
-
-9569 / 9854 = 97.11%
-
-change
-
-5763 / 5910 = 97.51%
-
-penalty
-
-3836 / 3940 = 97.36%
+| 항목 | 반영률 |
+| --- | --- |
+| compare | 9569 / 9854 = 97.11% |
+| change | 5763 / 5910 = 97.51% |
+| penalty | 3836 / 3940 = 97.36% |
 
 전체 유실률을 확인하면 **(19,704 - 19,168) / 19,704 = 0.0272 = 2.72%** 즉, 약 2.7%의 유실이 발생했다. 각 로그 이벤트별로도 공통적인 패턴이 보이는데 거의 비슷한 비율로 유실이 발생했다.
 
@@ -259,45 +167,22 @@ penalty
 
 아래와 같은 지표를 추가했다.
 
-지표
-
-의미
-
-필요한 이유
-
-holliverse.executor.active.count{executor="user-log"}
-
-user-log executor에서 실제로 일하고 있는 thread 수
-
-thread pool이 임계치까지 찼는지 확인
-
-holliverse.executor.queue.size{executor="user-log"}
-
-user-log executor queue backlog 크기
-
-비동기 작업이 밀리는지 확인
-
-holliverse.userlog.admin\_log\_feature.duration
-
-customer -> admin 내부 전달 호출 시간
-
-admin 전달이 병목인지 확인
-
-holliverse.userlog.publish
-
-user log publish 결과 카운터
-
-publish 자체는 성공하는지, 어느 단계에서 실패하는지 구분
+| 지표 | 의미 | 필요한 이유 |
+| --- | --- | --- |
+| holliverse.executor.active.count{executor="user-log"} | user-log executor에서 실제로 일하고 있는 thread 수 | thread pool이 임계치까지 찼는지 확인 |
+| holliverse.executor.queue.size{executor="user-log"} | user-log executor queue backlog 크기 | 비동기 작업이 밀리는지 확인 |
+| holliverse.userlog.admin_log_feature.duration | customer -> admin 내부 전달 호출 시간 | admin 전달이 병목인지 확인 |
+| holliverse.userlog.publish | user log publish 결과 카운터 | publish 자체는 성공하는지, 어느 단계에서 실패하는지 구분 |
 
 추가한 지표의 전체적인 측정 플로우는 아래와 같다.
 
-![](https://blog.kakaocdn.net/dna/tf92z/dJMcad2vxXb/AAAAAAAAAAAAAAAAAAAAAGDys069PM50yEC9ey7BpUqCRfo1A9Yjx1MwWGR9jtlb/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=Y%2B7qR%2BqyBqcGU%2B8NdR3ruBz0Lp4%3D)
+![](./01-option-subscriptions-flow-2026-03-31-205610.png)
 
 Grafana Metrics Flow
 
 아래와 같이 **CustomerMetrics.java**에 지표를 위한 helper 클래스를 만들었다.
 
-```
+```java
 @Component
 @Profile("customer")
 public class CustomerMetrics {
@@ -360,7 +245,7 @@ public class CustomerMetrics {
 
 user의 log 처리의 흐름을 count하기 위해 **POST /api/v1/customer/user-logs**의 비즈니스 로직에 아래와 같은 코드를 추가했다.
 
-```
+```java
 @Async("userLogTaskExecutor")
 public void publishBatch(Long memberId, List<UserLogRequest> requests) {
     if (requests == null || requests.isEmpty()) {
@@ -386,7 +271,7 @@ public void publish(Long memberId, UserLogRequest request) {
 
 **publish** 결과 기록
 
-```
+```java
 private void doPublish(Long memberId, UserLogRequest request) {
     UserLogEventName eventName = UserLogEventName.from(request.eventName());
 
@@ -435,7 +320,7 @@ private void doPublish(Long memberId, UserLogRequest request) {
 
 **request/result counter** 추가 등록
 
-```
+```java
 private Counter requestCounter(String mode) {
     return requestCounters.computeIfAbsent(mode, ignored ->
             Counter.builder("holliverse.userlog.requests")
@@ -455,37 +340,18 @@ private Counter resultCounter(String result) {
 
 해당 지표들을 반영한 **Grafana 대시보드**를 추가하고 **7개의 패널**을 만들었다.
 
-![](https://blog.kakaocdn.net/dna/bVMnz8/dJMcaiCMue6/AAAAAAAAAAAAAAAAAAAAAKyyWYiap_LztyzMTjnZboKBFBVus9DPiIXosXLuXCuM/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=wzB8ugRcQBlZl4sS47W5Io47XxM%3D)
+![](./02-스크린샷-2026-04-01-05-01-38.png)
 
 Grafana Dashboard
 
-UserLog Publish Rate by Result
-
-publish 성공/실패 흐름 확인
-
-UserLog Publish Rate by Event
-
-이벤트 타입별 publish 흐름 확인
-
-UserLog Executor Active Threads
-
-executor 포화 여부 확인
-
-UserLog Executor Queue Size
-
-backlog 증가 여부 확인
-
-Admin Log Feature Call Rate by Result
-
-admin 호출 성공/에러 흐름 확인
-
-Admin Log Feature Avg Duration (5m)
-
-평균 admin 호출 시간 확인
-
-Admin Log Feature p95 Duration (5m)
-
-Burst 시 지연이 얼마나 튀는지 확인
+| UserLog Publish Rate by Result | publish 성공/실패 흐름 확인 |
+| --- | --- |
+| UserLog Publish Rate by Event | 이벤트 타입별 publish 흐름 확인 |
+| UserLog Executor Active Threads | executor 포화 여부 확인 |
+| UserLog Executor Queue Size | backlog 증가 여부 확인 |
+| Admin Log Feature Call Rate by Result | admin 호출 성공/에러 흐름 확인 |
+| Admin Log Feature Avg Duration (5m) | 평균 admin 호출 시간 확인 |
+| Admin Log Feature p95 Duration (5m) | Burst 시 지연이 얼마나 튀는지 확인 |
 
 * * *
 
@@ -495,41 +361,19 @@ Burst 시 지연이 얼마나 튀는지 확인
 
 k6 실행 결과는 아래와 같다.
 
-지표
-
-값
-
-sentEvents
-
-9,073
-
-uniqueCompareEvents
-
-4,538
-
-uniqueChangeEvents
-
-2,721
-
-uniquePenaltyEvents
-
-1,814
-
-acceptedRate
-
-1.0
-
-failedRate
-
-0.0
-
-p95
-
-9,789.065ms
+| 지표 | 값 |
+| --- | --- |
+| sentEvents | 9,073 |
+| uniqueCompareEvents | 4,538 |
+| uniqueChangeEvents | 2,721 |
+| uniquePenaltyEvents | 1,814 |
+| acceptedRate | 1.0 |
+| failedRate | 0.0 |
+| p95 | 9,789.065ms |
 
 실제 **member\_action\_feature**에 누적된 count 합계를 다시 확인했다.
 
-```
+```sql
 holliverse=> SELECT COALESCE(SUM(maf.comparison_cnt), 0) AS compare_total,
 holliverse-> COALESCE(SUM(maf.change_mobile_cnt), 0) AS change_total,
 holliverse-> COALESCE(SUM(maf.checked_penalty_fee_cnt), 0) AS penalty_total,
@@ -549,7 +393,7 @@ holliverse-> WHERE fss.feature_type = 'MEMBER_ACTION_FEATURE';
 
 추가한 **Grafana 대시보드**는 아래와 같은 그래프를 그렸다.
 
-![](https://blog.kakaocdn.net/dna/b2SFzc/dJMcajuUQUO/AAAAAAAAAAAAAAAAAAAAAFSvXs1gJ826-sQeIKcwMbkecY0BagrTetYMpkQayMFE/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=%2BfGMF7ReJ6sRZc6hui%2F%2FDwDM7Hc%3D)
+![](./03-스크린샷-2026-04-01-06-13-59.png)
 
 Grafana Dashboard
 
@@ -560,51 +404,18 @@ Grafana Dashboard
 
 각 로그 유형별 유실률은 아래 표와 같았다.
 
-유형
-
-sent event
-
-DB
-
-유실률
-
-compare
-
-4,538
-
-3,295
-
-27.39%
-
-change
-
-2,721
-
-1,996
-
-26.65%
-
-penalty
-
-1,814
-
-1,344
-
-25.91%
-
-total
-
-9,073
-
-6,635
-
-26.87%
+| 유형 | sent event | DB | 유실률 |
+| --- | --- | --- | --- |
+| compare | 4,538 | 3,295 | 27.39% |
+| change | 2,721 | 1,996 | 26.65% |
+| penalty | 1,814 | 1,344 | 25.91% |
+| total | 9,073 | 6,635 | 26.87% |
 
 유형별 로그들의 유실률은 이전 테스트와 마찬가지로 비슷한 비율을 보였다.
 
 * * *
 
-![](https://blog.kakaocdn.net/dna/b1rIc8/dJMcafzkgQ0/AAAAAAAAAAAAAAAAAAAAAO6lVS370PiBm8v6A9gVyHRjDe8WNcrfVqwgCvicEwb4/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=F5Cjqrc9QBKtQpiCLCShV%2B8y1%2FE%3D)
+![](./04-스크린샷-2026-04-01-07-17-15.png)
 
 현재 사용자 로그를 처리하는 첫번째 비즈니스 로직인 **UserLogService.class**이다. 아래와 같은 흐름으로 로그를 처리하고 있다.
 
@@ -619,13 +430,15 @@ total
 -   admin이 느려지면 해당 thread는 반환되지 않음.
 -   결국 같은 executor를 쓰는 publish 흐름까지 backlog에 갇힘.
 
-![](https://blog.kakaocdn.net/dna/c7gi8q/dJMcabXY35g/AAAAAAAAAAAAAAAAAAAAAM0zBhUZG7B4RwRuhuMycV1MFfzPAgazomnCRu1otfpR/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=DObwepFmTVRgyAOsBHqc03oHbbw%3D)
+![](./05-스크린샷-2026-04-01-07-23-56.png)
 
 User Log Publish/sec
 
 우선 **Grafana지표**로 확인할 수 있는 부분에서 **User Log Publish/sec 지표**를 확인한 결과 계속해서 success만 증가하므로 **Kafka Publish**의 병목은 아니였다.
 
-![](https://blog.kakaocdn.net/dna/wM21S/dJMcaiCMxfB/AAAAAAAAAAAAAAAAAAAAAETMwV303RA8Z6hTnl2Xj6OBp6HM9frXPFZnzNagn7eh/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=6omyieyg%2BF7wgwleU8Ga5cdS3js%3D)![](https://blog.kakaocdn.net/dna/B6GVp/dJMcafTCATi/AAAAAAAAAAAAAAAAAAAAAPjneGT2lL2LYxQpKPOuYiJYEnIz7gv_FrbxD8QlF4B5/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=O4NeLeZ63WWsVNxXHPBDfgJadn8%3D)
+![](./06-img.png)
+
+![](./07-img-1.png)
 
 다음으로 주목할 지표들은 **UserLog** **Executor** **Queue** **Size**와 **UserLog** **Executor** **Active** **Threads**였다. **UserLog** **Executor** **Queue** **Size**지표는 16에 고정된 채로 max thread에 도달하였고, **UserLog** **Executor** **Active** **Threads**는 500이상을 찍으며 최대치에 도달하였다. 
 
@@ -633,17 +446,10 @@ User Log Publish/sec
 
 현재 코드 상으로 아래와 같은 작업들이 이루어 지며, 해당 작업들의 성격은 완전히 다르다.
 
-작업
-
-성격
-
-Kafka publish
-
-상대적으로 짧고 비동기 기반
-
-admin internal HTTP
-
-네트워크 I/O + 처리시간에 따라 수 초까지 늘어남
+| 작업 | 성격 |
+| --- | --- |
+| Kafka publish | 상대적으로 짧고 비동기 기반 |
+| admin internal HTTP | 네트워크 I/O + 처리시간에 따라 수 초까지 늘어남 |
 
 따라서, 비교적 짧은 작업 시간과 긴 시간의 작업이 같은 **executor**를 공유하면서 긴 작업이 **thread**를 점유하는 동안 짧은 작업까지 같이 밀린다.
 
@@ -653,7 +459,7 @@ admin internal HTTP
 
 위에서 언급한 문제들을 해결하기 위해 admin 전달을 **별도의 service**와 **별도의 executor**로 분리했다.
 
-```
+```java
 /**
  * admin log-feature 별도 executor로 분리
  */
@@ -673,7 +479,7 @@ public class AdminLogFeatureDispatchService {
 
 그리고 **UserLogService**에서는 더 이상 직접 **admin HTTP**를 호출하지 않고, **dispatch service에 위임**하도록 바꿨다.
 
-```
+```java
  /**
      * Admin 이벤트 변환.
      */
@@ -718,85 +524,27 @@ public class AdminLogFeatureDispatchService {
 
 수행한 k6의 결과는 아래와 같다.
 
-항목
+| 항목 | 값 |
+| --- | --- |
+| sentEvents | 10,808 |
+| intendedUniqueEvents | 10,808 |
+| uniqueCompareEvents | 5,405 |
+| uniqueChangeEvents | 3,243 |
+| uniquePenaltyEvents | 2,160 |
+| acceptedRate | 1.0 |
+| failedRate | 0.0 |
+| http p95 | 7,835.689ms |
 
-값
-
-sentEvents
-
-10,808
-
-intendedUniqueEvents
-
-10,808
-
-uniqueCompareEvents
-
-5,405
-
-uniqueChangeEvents
-
-3,243
-
-uniquePenaltyEvents
-
-2,160
-
-acceptedRate
-
-1.0
-
-failedRate
-
-0.0
-
-http p95
-
-7,835.689ms
-
-지표
-
-분리 전
-
-분리 후
-
-개선율
-
-DB total\_events
-
-6,635
-
-9,377
-
-+41.33%
-
-유실률
-
-26.87%
-
-13.24%
-
-\-50.72%
-
-http p95
-
-9,789.065ms
-
-7,835.689ms
-
-\-19.95%
-
-sentEvents
-
-9,073
-
-10,808
-
-+19.12%
+| 지표 | 분리 전 | 분리 후 | 개선율 |
+| --- | --- | --- | --- |
+| DB total_events | 6,635 | 9,377 | +41.33% |
+| 유실률 | 26.87% | 13.24% | -50.72% |
+| http p95 | 9,789.065ms | 7,835.689ms | -19.95% |
+| sentEvents | 9,073 | 10,808 | +19.12% |
 
 실제 **member\_action\_feature**에 누적된 count 합계를 다시 확인했다.
 
-```
+```sql
 holliverse=> SELECT COALESCE(SUM(maf.comparison_cnt), 0) AS compare_total,
 holliverse-> COALESCE(SUM(maf.change_mobile_cnt), 0) AS change_total,
 holliverse-> COALESCE(SUM(maf.checked_penalty_fee_cnt), 0) AS penalty_total,
@@ -816,49 +564,16 @@ holliverse-> WHERE fss.feature_type = 'MEMBER_ACTION_FEATURE';
 
 각 로그 유형별 유실률은 아래 표와 같았다.
 
-유형
-
-K6 결과
-
-DB
-
-유실률
-
-compare
-
-5,405
-
-4,684
-
-86.66%
-
-change
-
-3,243
-
-2,834
-
-87.39%
-
-penalty
-
-2,160
-
-1,859
-
-86.06%
-
-total
-
-10,808
-
-9,377
-
-13.24%
+| 유형 | K6 결과 | DB | 유실률 |
+| --- | --- | --- | --- |
+| compare | 5,405 | 4,684 | 86.66% |
+| change | 3,243 | 2,834 | 87.39% |
+| penalty | 2,160 | 1,859 | 86.06% |
+| total | 10,808 | 9,377 | 13.24% |
 
 즉, 이번 측정에도 특정 이벤트 타입의 문제가 아닌 공통 파이프라인 전체에서 비슷한 비율로 손실이 발생했다.
 
-![](https://blog.kakaocdn.net/dna/3LMez/dJMcacP7Fbx/AAAAAAAAAAAAAAAAAAAAAOwoPZX-Q95tSjLsXW1GwPXYwlTZQ5JtsI0x7VtKA82x/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=NhpJq2XWfhvNA1pv2Dz8avg4XGk%3D)
+![](./08-스크린샷-2026-04-01-09-04-24.png)
 
 이번에는 추가된 지표를 포함하여 Grafana 그래프를 관측했다.
 
@@ -866,17 +581,10 @@ total
 
 스크린샷 기준으로 두 executor 모두 거의 같은 패턴을 보였다.
 
-executor
-
-관측값
-
-user-log
-
-빠르게 16에 도달한 뒤 유지
-
-admin-log-feature
-
-빠르게 16에 도달한 뒤 유지
+| executor | 관측값 |
+| --- | --- |
+| user-log | 빠르게 16에 도달한 뒤 유지 |
+| admin-log-feature | 빠르게 16에 도달한 뒤 유지 |
 
 즉 publish 경로와 admin 전달 경로가 모두 **max thread 수까지 포화**되었다.
 
@@ -884,17 +592,10 @@ admin-log-feature
 
 queue도 마찬가지였다.
 
-executor
-
-관측값
-
-user-log
-
-약 500 수준까지 빠르게 증가 후 유지
-
-admin-log-feature
-
-약 500 수준까지 빠르게 증가 후 유지
+| executor | 관측값 |
+| --- | --- |
+| user-log | 약 500 수준까지 빠르게 증가 후 유지 |
+| admin-log-feature | 약 500 수준까지 빠르게 증가 후 유지 |
 
 즉 분리 이후에도 두 executor 모두 **queue가 거의 가득 찬 상태**로 유지됐다.
 
@@ -902,17 +603,10 @@ admin-log-feature
 
 admin internal 호출 지연도 여전히 높았다.
 
-지표
-
-관측값
-
-Admin Log Feature Duration p95
-
-약 5.2 ~ 5.6초
-
-Admin Log Feature Max Duration
-
-약 5.7 ~ 6.3초
+| 지표 | 관측값 |
+| --- | --- |
+| Admin Log Feature Duration p95 | 약 5.2 ~ 5.6초 |
+| Admin Log Feature Max Duration | 약 5.7 ~ 6.3초 |
 
 즉 admin internal 호출 자체는 여전히 **수 초 단위의 긴 작업**이었다.
 
@@ -926,7 +620,7 @@ executor를 분리했는데도 병목이 완전히 해결되지 않은 이유는
 
 #### **1\. admin 전달 자체가 긴 작업이었다.**
 
-```
+```java
 @Service
 @Profile("customer")
 @RequiredArgsConstructor
@@ -947,7 +641,7 @@ public class AdminLogFeatureDispatchService {
 
 더 중요한 지점은 **executor**의 설정 부분이다. **CustomerRuntimeInfraConfiguration.java**에서 **adminLogFeatureTaskExecutor**는 아래처럼 정의되어 있다.
 
-```
+```java
 @Bean(name = "adminLogFeatureTaskExecutor")
 public ThreadPoolTaskExecutor adminLogFeatureTaskExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -974,7 +668,11 @@ public ThreadPoolTaskExecutor adminLogFeatureTaskExecutor() {
 
 이러한 흐름은 Grafana에서도 나타났다.
 
-![](https://blog.kakaocdn.net/dna/bbMheh/dJMcaflMz3A/AAAAAAAAAAAAAAAAAAAAAITqThvaWjd3U2gB64fo7Sv1otQ2ZW5HQq2y4ocUhcHH/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=frl6Zo7pJkCWJ0HTLI6OhUrR2VM%3D)![](https://blog.kakaocdn.net/dna/eHsffZ/dJMcafF5yvR/AAAAAAAAAAAAAAAAAAAAAHKu2kF9gdEkaYp7SWjJ0EjKi6zVpJgCgGBxYdcr_oDQ/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=nzuMG7NfKCGQqOkY3RLxfz%2Bptwo%3D)
+![](./09-img-2.png)
+
+왼-Executor Queue Size / 오-Executor Active Threads
+
+![](./10-img-3.png)
 
 왼-Executor Queue Size / 오-Executor Active Threads
 
@@ -1013,7 +711,7 @@ public ThreadPoolTaskExecutor adminLogFeatureTaskExecutor() {
 
 우선은 이러한 파이프라인 오염을 해결하기 위해 **AbortPolicy**를 채택하였다.
 
-```
+```java
 @Bean(name = "adminLogFeatureTaskExecutor")
 public ThreadPoolTaskExecutor adminLogFeatureTaskExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -1039,7 +737,7 @@ public ThreadPoolTaskExecutor adminLogFeatureTaskExecutor() {
 
 하지만, **reject**된 작업에 대해서 추적할 수 있어야 하기 때문에 아래와 같은 **metric**를 추가했하고, **dispatch enqueue의 성공/실패**를 구분하기 위해 아래와 같이 코드를 수정했다.
 
-```
+```java
 public void recordAdminLogFeatureDispatch(String result) {
     Counter.builder("holliverse.userlog.admin_log_feature.dispatch")
             .description("Admin log-feature async dispatch enqueue results")
@@ -1049,7 +747,7 @@ public void recordAdminLogFeatureDispatch(String result) {
 }
 ```
 
-```
+```java
     /**
      * Admin 이벤트 변환.
      */
@@ -1082,81 +780,23 @@ public void recordAdminLogFeatureDispatch(String result) {
 
 수행한 k6의 결과는 아래와 같다.
 
-항목
+| 항목 | 값 |
+| --- | --- |
+| sentEvents | 23,175 |
+| intendedUniqueEvents | 23,175 |
+| uniqueCompareEvents | 1,1590 |
+| uniqueChangeEvents | 6,951 |
+| uniquePenaltyEvents | 4,634 |
+| acceptedRate | 1.0 |
+| failedRate | 0.0 |
+| http p95 | 2,737.8485ms |
 
-값
-
-sentEvents
-
-23,175
-
-intendedUniqueEvents
-
-23,175
-
-uniqueCompareEvents
-
-1,1590
-
-uniqueChangeEvents
-
-6,951
-
-uniquePenaltyEvents
-
-4,634
-
-acceptedRate
-
-1.0
-
-failedRate
-
-0.0
-
-http p95
-
-2,737.8485ms
-
-지표
-
-CallerRunsPolicy 단계 
-
-AbortPolicy 단계
-
-변화
-
-DB total\_events
-
-9,377
-
-11,441
-
-+22.01%
-
-유실률
-
-13.24%
-
-50.64%
-
-+37.40%p
-
-http p95
-
-7,835.689ms
-
-2,737.8485ms
-
-\-65.06%
-
-sentEvents
-
-10,808
-
-23,175
-
-+114.42%
+| 지표 | CallerRunsPolicy 단계 | AbortPolicy 단계 | 변화 |
+| --- | --- | --- | --- |
+| DB total_events | 9,377 | 11,441 | +22.01% |
+| 유실률 | 13.24% | 50.64% | +37.40%p |
+| http p95 | 7,835.689ms | 2,737.8485ms | -65.06% |
+| sentEvents | 10,808 | 23,175 | +114.42% |
 
 아래와 같은 2가지의 큰 변화가 존재했다.
 
@@ -1165,13 +805,13 @@ sentEvents
 
 즉, Abort Policy는 응답 경로를 보호하여 처리 속도는 빨라졌지만, downstream 전달 보장은 하지 못했다. 아래의 새로 추가한 **Grafana reject 반영 지표 그래프**를 보면 **equeued된 로그**들보다는 **reject된 로그**들이 더 많았음을 알 수 있다.
 
-![](https://blog.kakaocdn.net/dna/bAOcyC/dJMcahKF9ao/AAAAAAAAAAAAAAAAAAAAAFyLNHY-vcrsKQr5zmpTfxjKTRiDBKFDP6zV005MKVhY/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=e9j0KmAlglpXnlOq985MmOO%2FsZY%3D)
+![](./11-스크린샷-2026-04-01-11-20-14.png)
 
 Admin Log Feature Dispatch Enqueue Results
 
 실제 **member\_action\_feature**에 누적된 count 합계를 다시 확인했다.
 
-```
+```sql
 holliverse=> SELECT COALESCE(SUM(maf.comparison_cnt), 0) AS compare_total,COALESCE(SUM(maf.change_mobile_cnt), 0) 
 holliverse-> AS change_total, COALESCE(SUM(maf.checked_penalty_fee_cnt), 0) AS penalty_total,
 holliverse-> COALESCE(SUM(maf.comparison_cnt + maf.change_mobile_cnt + maf.checked_penalty_fee_cnt), 0) 
@@ -1186,45 +826,12 @@ holliverse-> JOIN burst_members bm ON bm.member_id = fss.member_id WHERE fss.fea
 
 각 로그 유형별 유실률은 아래 표와 같았다.
 
-유형
-
-k6
-
-DB
-
-반영률
-
-compare
-
-11,590
-
-5,623
-
-48.52%
-
-change
-
-6,951
-
-3,467
-
-49.88%
-
-penalty
-
-4,634
-
-2,351
-
-50.73%
-
-total
-
-23,175
-
-11,441
-
-49.36%
+| 유형 | k6 | DB | 반영률 |
+| --- | --- | --- | --- |
+| compare | 11,590 | 5,623 | 48.52% |
+| change | 6,951 | 3,467 | 49.88% |
+| penalty | 4,634 | 2,351 | 50.73% |
+| total | 23,175 | 11,441 | 49.36% |
 
 이전 앞선 Burst 측정과 동일한 패턴을 보였다.
 
@@ -1243,7 +850,3 @@ total
 one-year-gap has 10 repositories available. Follow their code on GitHub.
 
 github.com](https://github.com/orgs/one-year-gap/repositories)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 40 }
-
-공유하기

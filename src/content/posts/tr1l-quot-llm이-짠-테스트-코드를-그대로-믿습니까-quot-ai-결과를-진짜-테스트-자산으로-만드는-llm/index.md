@@ -1,8 +1,12 @@
 ---
-title: "[TR1L] &quot;LLM이 짠 테스트 코드를 그대로 믿습니까?&quot; — AI 결과를 진짜  테스트 자산으로 만드는 LLM"
-date: 2026-05-28
+title: "[TR1L] \"LLM이 짠 테스트 코드를 그대로 믿습니까?\" — AI 결과를 진짜  테스트 자산으로 만드는 LLM-assisted Test (1)"
+date: 2026-05-29
+project: TR1L
+tags: ["test", "스프링", "자동화", "gpt", "OpenAI", "spring batch", "스프링 배치", "테스트 코드", "LLM", "AI-Driven"]
 legacyUrl: "https://codekim3570.tistory.com/41"
----## **1\. 개요**
+---
+
+## **1\. 개요**
 
 거의 2달만에 블로그 포스팅을 다시 시작했습니다. 그동안 다양한 기업에서 면접과 코딩 테스트를 진행하며 블로그를 관리할 시간이 상대적으로 부족하여 Holliverse 테스트 관련 포스팅도 중간에 멈췄습니다.
 
@@ -39,25 +43,12 @@ TR1L의 Job1(통신사 청구서 정산 배치)는 월 단위 배치입니다. �
 
 실제 구현에서는 아래와 같은 테이블과 역할로 사용했습니다.
 
-테이블명
-
-역할
-
-billing\_targets
-
-이번 월 청구 계산에 필요한 입력 데이터
-
-billing\_work
-
-사용자별 처리 상태와 재시도 상태
-
-billing\_snapshot
-
-계산이 완료된 청구 결과 문서
-
-billing\_cycle
-
-월 단위 실행 상태
+| 테이블명 | 역할 |
+| --- | --- |
+| billing_targets | 이번 월 청구 계산에 필요한 입력 데이터 |
+| billing_work | 사용자별 처리 상태와 재시도 상태 |
+| billing_snapshot | 계산이 완료된 청구 결과 문서 |
+| billing_cycle | 월 단위 실행 상태 |
 
 예를 들어 Step3에서 이러한 상황이 발생할 수 있습니다.
 
@@ -93,25 +84,12 @@ billing\_cycle
 
 각 조건들은 실제 장애 시나리오와 연결됩니다.
 
-invariant 조건
-
-장애 시나리오
-
-중복 work 금지
-
-같은 사용자의 청구서가 두 번 계산되는 문제
-
-stale PROCESSING 금지
-
-worker 장애 후 작업이 회수되지 않는 문제
-
-CALCULATED와 snapshot 연결
-
-결과 저장과 상태 업데이트가 어긋나는 문제
-
-target / work 사용자 집합 일치
-
-계산 대상 누락 또는 고아 work 생성
+| invariant 조건 | 장애 시나리오 |
+| --- | --- |
+| 중복 work 금지 | 같은 사용자의 청구서가 두 번 계산되는 문제 |
+| stale PROCESSING 금지 | worker 장애 후 작업이 회수되지 않는 문제 |
+| CALCULATED와 snapshot 연결 | 결과 저장과 상태 업데이트가 어긋나는 문제 |
+| target / work 사용자 집합 일치 | 계산 대상 누락 또는 고아 work 생성 |
 
 여기서 한 가지 짚고 가야 하는 고민이 존재합니다. 
 
@@ -143,35 +121,12 @@ LLM은 구현된 코드와 스키마를 읽고, 사람이 놓칠 수 있는 시�
 
 아래와 같이 역할을 정확하게 나누어 LLM의 장점과 단점을 분리하였습니다.
 
-구분
-
-LLM이 잘하는 일
-
-LLM에게 맡기면 위험한 일
-
-후보 생성
-
-코드와 스키마에서 가능한 조건을 제안
-
-최종 테스트 기준 확정
-
-표현 변환
-
-자연어 조건을 SQL 형태로 변환
-
-SQL 의미 검증
-
-관점 확장
-
-temporal, referentail, count 관점 제안
-
-장애 영향도 판단
-
-문서화
-
-근거와 설명 초안 작성
-
-운영 승인
+| 구분 | LLM이 잘하는 일 | LLM에게 맡기면 위험한 일 |
+| --- | --- | --- |
+| 후보 생성 | 코드와 스키마에서 가능한 조건을 제안 | 최종 테스트 기준 확정 |
+| 표현 변환 | 자연어 조건을 SQL 형태로 변환 | SQL 의미 검증 |
+| 관점 확장 | temporal, referentail, count 관점 제안 | 장애 영향도 판단 |
+| 문서화 | 근거와 설명 초안 작성 | 운영 승인 |
 
 * * *
 
@@ -179,7 +134,7 @@ temporal, referentail, count 관점 제안
 
 TR1L의 LLM-assisted Test 파이프라인은 아래와 같이 설계했습니다.
 
-![](https://blog.kakaocdn.net/dna/eKEvHr/dJMcagZV0x7/AAAAAAAAAAAAAAAAAAAAAGFloocy7GtzZKlbXJgJnNpNPoIaTsAYAVVtVQC_HRZI/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=Fjnk7%2BMPXS%2BP6sEjGVmtG2LYDfU%3D)
+![](./01-untitled-2026-05-28-1816.png)
 
 LLM-assisted Test 파이프라인
 
@@ -195,7 +150,7 @@ LLM-assisted Test 파이프라인
 
 ### **1) Context Pack: LLM에게 아무거나 던지지 않기**
 
-![](https://blog.kakaocdn.net/dna/cQdN4Z/dJMcacQMPGR/AAAAAAAAAAAAAAAAAAAAAIV_rM64UekH70I-FakOdkbyChW4RBfqWryQcK4nroWR/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=GcoakwQK%2FCvSXgR%2Fxf7IcBlL6Zs%3D)
+![](./02-스크린샷-2026-05-28-22-58-25.png)
 
 1\. Job Context Pack
 
@@ -208,7 +163,7 @@ LLM에게 그저 **'Job 코드를 분석해서 invariant를 만들어줘'**라�
 > 5\. 상태 전이 규칙  
 > 6\. 기존 rerun-safe 설계 의도
 
-![](https://blog.kakaocdn.net/dna/csTfLc/dJMcafNAoJm/AAAAAAAAAAAAAAAAAAAAAMID1ZQKr_ngCadDjECgEH8KgTn_xQxN4KoTTUW5peWR/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=Fydxc3kwy929QM4KYb0qUl4sMJ4%3D)
+![](./03-스크린샷-2026-05-28-19-36-20.png)
 
 worker Context pack
 
@@ -216,13 +171,13 @@ worker Context pack
 
 ### **2) LLM output: JSON으로 제한하기**
 
-![](https://blog.kakaocdn.net/dna/JWNBz/dJMcadhTOhK/AAAAAAAAAAAAAAAAAAAAALS57IV4oCEhSbDjpmuGyOESmcnLL9XKvhOzx9kjgoWp/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=uCtVCyP3djvbY8qiP5G51ZXvhls%3D)
+![](./04-스크린샷-2026-05-28-22-59-12.png)
 
 02\. LLM 후보 생성-output JSON 형태로 제한
 
 LLM 출력 값은 단순 텍스트 형식이 아니라 JSON 구조로 제한했습니다. 설명이 단순 텍스트 형식이면 사람이 읽기 좋은 자연어 형태이지만, 자동 검증으로 사용하기에는 어렵습니다.
 
-```
+```json
 {
   "id": "INV-103",
   "category": "temporal",
@@ -234,37 +189,15 @@ LLM 출력 값은 단순 텍스트 형식이 아니라 JSON 구조로 제한했�
 }
 ```
 
-필드
-
-의미
-
-id
-
-invariant 후보 고유 키
-
-category
-
-검증 관점 분류
-
-description
-
-자연어 기반의 설명
-
-scope
-
-언제 조건이 성립해야 하는지
-
-sql\_check
-
-실제 검증 쿼리
-
-violated\_by
-
-어떤 장애와 연결되는지
-
-severity
-
-중요도
+| 필드 | 의미 |
+| --- | --- |
+| id | invariant 후보 고유 키 |
+| category | 검증 관점 분류 |
+| description | 자연어 기반의 설명 |
+| scope | 언제 조건이 성립해야 하는지 |
+| sql_check | 실제 검증 쿼리 |
+| violated_by | 어떤 장애와 연결되는지 |
+| severity | 중요도 |
 
 여기서 scope는 중요한 역할입니다. 예를 들어 **PROCESSING** 상태는 실행 중에는 정상입니다. 하지만, 재실행이 종료되었는데도 만료된 **PROCESSING**이 남아 있으면 문제가 됩니다.
 
@@ -274,71 +207,37 @@ severity
 
 ### **3) LLM 후보 생성**
 
-![](https://blog.kakaocdn.net/dna/cd9FgW/dJMcahdwKq2/AAAAAAAAAAAAAAAAAAAAAHf7uiWBWg5TzxjmhSPjG3b9Q7e9Tgi_Pj2kj88baPTh/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=866LYAq1ITkKatZyAOT1pyVwhRQ%3D)
+![](./05-스크린샷-2026-05-28-22-59-42.png)
 
 02\. LLM 후보 생성 - invariant 후보 생성
 
 실제로 OpenAI의 GPT-5.4-mini 모델과 연동하여 Job1에 대한 invariant 후보를 생성했습니다. 해당 포스팅에서는 별도의 OpenAI API 연동 과정에 대해서는 서술하지 않겠습니다. 다른 블로그 글이나 OpenAI API 공식문서를 참고해주세요.
 
-![](https://blog.kakaocdn.net/dna/mwGbm/dJMcahYRSjr/AAAAAAAAAAAAAAAAAAAAAC6Gzk1TjXCEOQlQewNBupMvREyJrBimPMcUp8QIHrxS/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=tBB%2F9hIlyhrVOAUMfpllkemINOo%3D)![](https://blog.kakaocdn.net/dna/Ztpfp/dJMcadB49rZ/AAAAAAAAAAAAAAAAAAAAAEU9RsZEQAFm079YMS-8EDc5FByVnzwUN08YcMvbSG7o/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=LCMcdQM0cbYI3tUxYNj1aok5Mjk%3D)
+![](./06-img.png)
+
+OpenAI API Response 원문
+
+![](./07-img-1.png)
 
 OpenAI API Response 원문
 
 실제 OpenAI API를 통해서 받은 API 응답값은 위 이미지와 같은 원문이였습니다. 해당 응답값을 이제 기존에 정해두었던 JSON 형식에 맞게 파싱하여 저장하도록 구현했습니다.
 
-![](https://blog.kakaocdn.net/dna/zyiO9/dJMcagMt6ol/AAAAAAAAAAAAAAAAAAAAAAH2SSClYvZ-b32_Fos8iZAdwEDx9r0FQ7Z3an4sSC1Y/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=oHXFLuJ2A2xVJFykFNvm%2FBcD9kg%3D)
+![](./08-스크린샷-2026-05-28-20-11-53.png)
 
 파싱한 JSON OpenAI Response
 
 총 invariant 후보 7건을 생성했습니다.
 
-후보
-
-분류
-
-의미
-
-J1S3-INV-001
-
-count consistency
-
-같은 월과 사용자 조합의 **billing\_work**가 중복 생성되면 안 됨
-
-J1S3-INV-002
-
-state consistency
-
-**billing\_work.status**는 허용된 상태값만 가져야 함
-
-J1S3-INV-003
-
-temporal
-
-**lease가 유효한 PROCESSING** work는 재선점 대상이 아니어야 함
-
-J1S3-INV-004
-
-state consistency
-
-Step3 완료 시점에 **TARGET work**가 남아 있으면 안 됨
-
-J1S3-INV-005
-
-temporal
-
-재실행 완료 뒤 **만료된 PROCESSING work**가 남아 있으면 안 됨
-
-J1S3-INV-006
-
-referential
-
-Mongo **billing\_snapshot.workId**는 billing\_work와 대응되어야 함
-
-J1S3-INV-007
-
-state consistency
-
-**snapshot 존재 여부**와 **billing\_work 최종 상태**가 어긋나면 안 됨
+| 후보 | 분류 | 의미 |
+| --- | --- | --- |
+| J1S3-INV-001 | count consistency | 같은 월과 사용자 조합의 billing_work가 중복 생성되면 안 됨 |
+| J1S3-INV-002 | state consistency | billing_work.status는 허용된 상태값만 가져야 함 |
+| J1S3-INV-003 | temporal | lease가 유효한 PROCESSING work는 재선점 대상이 아니어야 함 |
+| J1S3-INV-004 | state consistency | Step3 완료 시점에 TARGET work가 남아 있으면 안 됨 |
+| J1S3-INV-005 | temporal | 재실행 완료 뒤 만료된 PROCESSING work가 남아 있으면 안 됨 |
+| J1S3-INV-006 | referential | Mongo billing_snapshot.workId는 billing_work와 대응되어야 함 |
+| J1S3-INV-007 | state consistency | snapshot 존재 여부와 billing_work 최종 상태가 어긋나면 안 됨 |
 
 이러한 후보들은 아직 active invariant 조건들이 아닌 검토 가능한 후보들로 위에서 말한 파이프라인을 거쳐서 **'active invariant 조건'** 으로 승격시킵니다.
 
@@ -346,51 +245,23 @@ state consistency
 
 ### **4) LLM이 생성한 invariant 조건 점수화 기준**
 
-![](https://blog.kakaocdn.net/dna/b5BBSb/dJMcadhTOiM/AAAAAAAAAAAAAAAAAAAAADXu6sBov_KIe83CnwqxZ0clP_iL2X6UU8Zm7d6tgspg/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=WujRRTQ7Iw2R15of0tCda0J0r04%3D)
+![](./09-스크린샷-2026-05-28-23-02-01.png)
 
 03\. Validation Layer - scoring
 
 invariant 후보를 바로 반영하지 않고 검토하기 위해서 점수화 기준을 만들었습니다. (점수는 100점 기준)
 
-평가 항목
-
-배점
-
-내용
-
-형식 통과
-
-20
-
-JSON 필드가 맞는가
-
-SQL 실행 가능성
-
-25
-
-실제 검증 쿼리로 사용할 수 있는가
-
-의미 일치
-
-25
-
-설명과 SQL이 같은 조건을 말하는가
-
-시나리오 연결
-
-15
-
-실제 장애 시나리오와 연결되는가
-
-신규성
-
-15
-
-기존 active invariant와 의미 있게 다른가
+| 평가 항목 | 배점 | 내용 |
+| --- | --- | --- |
+| 형식 통과 | 20 | JSON 필드가 맞는가 |
+| SQL 실행 가능성 | 25 | 실제 검증 쿼리로 사용할 수 있는가 |
+| 의미 일치 | 25 | 설명과 SQL이 같은 조건을 말하는가 |
+| 시나리오 연결 | 15 | 실제 장애 시나리오와 연결되는가 |
+| 신규성 | 15 | 기존 active invariant와 의미 있게 다른가 |
 
 후보군의 승격 상태는 ENUM으로 관리하였습니다.
 
-```
+```java
 // 승격 판정 정의
 public enum GeneratedInvariantPromotionDecision {
     ACTIVE_CANDIDATE,
@@ -401,7 +272,7 @@ public enum GeneratedInvariantPromotionDecision {
 
 **active invariant 후보** 기준 점수는 ***85점***으로 설정하였습니다. 그리고 아래와 같은 메서드를 통해서 검증 게이트를 구현했습니다.(novel은 신규성 유무입니다.)
 
-```
+```java
 // 최종 판정
  private GeneratedInvariantPromotionDecision decide(int totalScore, boolean sqlExecutable, boolean novel) {
      if (!sqlExecutable || totalScore < 60) {
@@ -418,7 +289,7 @@ public enum GeneratedInvariantPromotionDecision {
 
 ### **5) Human Review: 사람이 검증하는 이유**
 
-![](https://blog.kakaocdn.net/dna/b9kHWU/dJMcajberPq/AAAAAAAAAAAAAAAAAAAAAE2Ezu_FyfzFDwB8VqqW-D2x0EHHyZrVz3v4UUQag7Bx/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=nuAdNnvmnwVSU4uyl%2FpvFDUmexk%3D)
+![](./10-스크린샷-2026-05-28-23-02-22.png)
 
 03\. Validation Layer - human review
 
@@ -426,7 +297,7 @@ public enum GeneratedInvariantPromotionDecision {
 
 실제로 **J1S3-I7 후보**는 점수 평가에서 시나리오 연결성 지표인 **'scenario linkage'** 점수가 ***0점***을 기록하여 **active invariant 승격**이 자동으로 제외되는 문제가 있었습니다.
 
-```
+```json
 {
   "generatedInvariantId": "J1S3-I7",
   "reviewStatus": "approved",
@@ -452,7 +323,7 @@ public enum GeneratedInvariantPromotionDecision {
 
 count는 3으로 동일하지만 정합성은 깨졌습니다. 그래서 active invariant는 단순 count가 아니라 사용자 집합 비교 방식으로 승격하도록 승인 후 리뷰 메모를 남겼습니다.
 
-```
+```json
 "reviewNotes": [
     "LLM 생성 결과는 count_consistency 로 분류됐지만 단순 count 보다 사용자 집합 차이를 보는 쪽이 더 안전함",
     "scenarioLinked 점수는 낮았지만 S-001 S-001R S-003R 검증 목록에 직접 연결해서 보완함",
@@ -464,11 +335,11 @@ count는 3으로 동일하지만 정합성은 깨졌습니다. 그래서 active 
 
 ### **6) Review Gate & Consistency Checker: 최종 검증 장치** 
 
-![](https://blog.kakaocdn.net/dna/RWhvU/dJMcabYHkDL/AAAAAAAAAAAAAAAAAAAAACytyPyziWujV3RXb10FSNtajZbrGEUDHL6fHLZbFVx1/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=dg73xIrB5t1k59zRwO0VfFze5wA%3D)
+![](./11-스크린샷-2026-05-28-23-12-06.png)
 
 03\. Validation Layer - review gate
 
-![](https://blog.kakaocdn.net/dna/cIRfty/dJMcacJ5p5T/AAAAAAAAAAAAAAAAAAAAACRJkiOchB9emJ-I63e2yPXa0PWmArNPcHbVobge3rbn/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=j382OgTflSYCxxemiwPPJi1WD4M%3D)
+![](./12-kljlkj.png)
 
 Review Gate flow diagram
 
@@ -480,7 +351,7 @@ Review Gate의 전체적인 흐름은 위와 같습니다.
 > 4\. **기존 active invariant와 중복 가능성이 존재**하면 active invariant 승격 보류  
 > 5\. **scenarioLinked가 false이면서 보완 검토 메모가 없으면** active invariant 승격 보류
 
-```
+```java
 public ReviewGateResult evaluate(
             HumanReviewRecord review,
             InvariantDefinition promoted,
@@ -540,19 +411,19 @@ public ReviewGateResult evaluate(
 
 반면, **warnings**는 active invariant로 승격이 가능하지만 검토자의 리뷰가 필요한 조건입니다. **J1S3-I7** 역시 이 부분에서 **scenario linkage 점수가 낮아** 걸렸고, 검토 메모를 통해 보완하여 warnings를 남기고 통과시켰습니다.
 
-![](https://blog.kakaocdn.net/dna/cK63EU/dJMcahdwK6M/AAAAAAAAAAAAAAAAAAAAANyqpdaJ7tSVocBOB99n47cB0nHdwa8kt3UVK32fXAOb/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=drb%2FNQexorxU9%2FnJ4JeESWu2%2Ft8%3D)
+![](./13-스크린샷-2026-05-28-23-31-17.png)
 
 03\. Validation Layer - Consistency Checker
 
 **Consistency Checker**는 생성과 검토의 흐름을 분리하기 위해서 독립적인 LLM 역할을 가진 Checker를 두어 아래와 같은 항목들을 검사합니다.
 
-![](https://blog.kakaocdn.net/dna/9YVI7/dJMcah5GMdO/AAAAAAAAAAAAAAAAAAAAAFRCn2DI2xHsf9cTuVGGbTrYwhXdfxqArQhDIUef1CfZ/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=4KHJxhKWwE7nxqUOiJ1V00A0Jf4%3D)
+![](./14-ㄴㅇㅁㄴㅇㅁㄴㅇㅂㄷㅂㅈㄷ.png)
 
 Consistency Checker 검증 항목
 
 active invariant 후보 검증은 아래와 같은 코드를 통해 검사했습니다.
 
-```
+```java
 private InvariantConsistencyReview checkOne(
             GeneratedInvariantCandidate candidate,
             List<InvariantDefinition> activeInvariants
@@ -579,7 +450,7 @@ private InvariantConsistencyReview checkOne(
 
 하나라도 FAIL을 찾으면 해당 후보 전체는 FAIL 처리했습니다.
 
-```
+```java
 	// 판정 계산
     private InvariantConsistencyDecision decide(List<InvariantConsistencyFinding> findings) {
         boolean hasFail = findings.stream().anyMatch(finding -> "FAIL".equals(finding.severity()));
@@ -594,7 +465,7 @@ private InvariantConsistencyReview checkOne(
 
 실제로 **Consistency Checker**가 잘못된 후보를 **FAIL로 검증**으로 판정하고 **active invariant** 승격 대상에서 제외할 수 있음을 테스트하기 위해서 다음과 같은 **BAD-001** 후보를 만들어 보았습니다.
 
-```
+```java
 @Test
     @DisplayName("SQL 의미가 맞지 않는 후보는 consistency checker 에서 FAIL 로 막는지 보기")
     void invalidSqlMeaningShouldFailConsistencyCheck() {
@@ -621,7 +492,7 @@ private InvariantConsistencyReview checkOne(
     }
 ```
 
-![](https://blog.kakaocdn.net/dna/tClgX/dJMcabxzHT3/AAAAAAAAAAAAAAAAAAAAAIwy3BahiiqPOgIo4qE_nm-m6N3SlIsBRuqRlrYOpdEG/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=xolyHcEt229t8dU6NQoQSwhkYco%3D)
+![](./15-스크린샷-2026-05-28-23-42-33.png)
 
 실제로 JUnit를 통한 테스트 코드를 작성하고 실행한 결과 실제로 잘못된 후보를 승격 대상에서 제외할 수 있음을 확인할 수 있었습니다.
 
@@ -629,7 +500,7 @@ private InvariantConsistencyReview checkOne(
 
 ### **7) Acitve Invariant로 승격된 결과**
 
-![](https://blog.kakaocdn.net/dna/b1jupe/dJMcadIRkls/AAAAAAAAAAAAAAAAAAAAABSiuHIr7hrxUXixZ0qxEOnRG75RrskhjYPzREEXs0fV/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=ToF2uDLL3h3KQJedWsKtBHjT70M%3D)
+![](./16-스크린샷-2026-05-29-00-19-02.png)
 
 04\. Test Assets - active invariant, SQL Check resources
 
@@ -637,7 +508,7 @@ Review Gate를 통과한 후보는 최종적으로 active invariant로 등록되
 
 이번에 승격한 조건은 **INV-004**였습니다.
 
-```
+```json
 {
   "id": "INV-004",
   "title": "Target and work membership match",
@@ -653,11 +524,11 @@ Review Gate를 통과한 후보는 최종적으로 active invariant로 등록되
 
 이러한 조건은 단순 개수를 비교하는 것이 아닌 **billing\_targets에 들어가 ㄴ사용자**와 **billing\_work에 생성된 사용자**가 정확히 같은지를 검증합니다. 검증을 위한 SQL은 **FULL OUTER JOIN**으로 양쪽 집합의 차이를 모두 잡을수 있도록 작성했습니다.
 
-![](https://blog.kakaocdn.net/dna/bSd9i1/dJMcacwwKqN/AAAAAAAAAAAAAAAAAAAAAMu0rj5AhBKOQoRugBJA45JHrmPJSkaeZoifpgyVsXfR/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=W2JORVc49alb82K5HllsNOGSwqc%3D)
+![](./17-ㅁㄴㅇㅁㄴㅇㅁㄴㅇㅇ.png)
 
 벤 다이어그램
 
-```
+```java
 SELECT COALESCE(bt.user_id, bw.user_id) AS user_id,
        bt.billing_month AS target_billing_month,
        bw.billing_month_day AS work_billing_month_day,
@@ -683,29 +554,13 @@ WHERE COALESCE(bt.billing_month, bw.billing_month_day) = :billingMonthDay
 
 검증은 크게 아래와 같은 항목으로 나누었습니다.
 
-테스트
-
-검증 내용
-
-OpenAI live generation Test
-
-실제 LLM 호출과 응답 artifact 저장
-
-Scoring contract Test
-
-후보 점수화와 승격 후보 분류
-
-Human Review contract Test
-
-사람이 남긴 검토 기록과 active invariaant 연결
-
-Review Gate contract Test
-
-승인 조건과 차단 조건 검증
-
-Consistency Checker contract Test
-
-잘못된 후보를 FAIL로 분류하는지 검증
+| 테스트 | 검증 내용 |
+| --- | --- |
+| OpenAI live generation Test | 실제 LLM 호출과 응답 artifact 저장 |
+| Scoring contract Test | 후보 점수화와 승격 후보 분류 |
+| Human Review contract Test | 사람이 남긴 검토 기록과 active invariaant 연결 |
+| Review Gate contract Test | 승인 조건과 차단 조건 검증 |
+| Consistency Checker contract Test | 잘못된 후보를 FAIL로 분류하는지 검증 |
 
 실제 검증을 위한 테스트 코드는 아래의 PR들을 참고해주세요.
 
@@ -717,7 +572,7 @@ github.com](https://github.com/Team-TR1L/TR1L-BE/pull/349)
 
 그리고 OpenAI의 실호출 테스트는 항상 실행되지 않도록 사용자 환경 변수 주입 설정을 통해 막았습니다. 실제 API 호출은 비용과 외부 의존성이 존재하기 때문에 일반 테스트에서는 contract test만을 실행하고, 실제 응답값이 필요할 때만 **live test를 실행**하도록 분리했습니다.
 
-```
+```java
 Assumptions.assumeTrue(
     "true".equalsIgnoreCase(System.getenv("JOB1_AI_INVARIANT_LIVE_ENABLED"))
 );
@@ -725,33 +580,14 @@ Assumptions.assumeTrue(
 
 실행 결과는 아래와 같은 artifact로 저장했습니다.
 
-artifact
-
-의미
-
-request-body.json
-
-OpenAI에 보낸 요청
-
-response-body.json
-
-OpenAI 원본 응답
-
-response-output-text.json
-
-모델이 생성한 텍스트
-
-generated-candidates.json
-
-파싱된 invariant 후보
-
-generated-candidate-evaluation.json
-
-후보별 점수화 결과
-
-generation-metrics.json
-
-모델명, token, 후보 수, 평균 점수
+| artifact | 의미 |
+| --- | --- |
+| request-body.json | OpenAI에 보낸 요청 |
+| response-body.json | OpenAI 원본 응답 |
+| response-output-text.json | 모델이 생성한 텍스트 |
+| generated-candidates.json | 파싱된 invariant 후보 |
+| generated-candidate-evaluation.json | 후보별 점수화 결과 |
+| generation-metrics.json | 모델명, token, 후보 수, 평균 점수 |
 
 * * *
 
@@ -759,64 +595,23 @@ generation-metrics.json
 
 이번 포스팅에서 진행한 작업의 결과는 아래와 같이 정리할 수 있습니다.
 
-항목
-
-결과
-
-OpenAI live 후보 생성 수
-
-7건
-
-live 후보 평균 점수
-
-77.86점
-
-active candidate
-
-3건
-
-review required
-
-3건
-
-reject
-
-1건
-
-OpenAI total tokens
-
-3,024
-
-Human Review 승격 대상
-
-J1S3-I7 -> INV-004
-
-Human Review 점수
-
-85점
-
-Review Gate blockers
-
-0건
-
-Review Gate Warnings
-
-1건
-
-Consistency Checker BAD-001
-
-FAIL
-
-JUnit test
-
- Review Gate, Consistency Checker, Human Review, Scoring 계약 테스트 통과
+| 항목 | 결과 |
+| --- | --- |
+| OpenAI live 후보 생성 수 | 7건 |
+| live 후보 평균 점수 | 77.86점 |
+| active candidate | 3건 |
+| review required | 3건 |
+| reject | 1건 |
+| OpenAI total tokens | 3,024 |
+| Human Review 승격 대상 | J1S3-I7 -> INV-004 |
+| Human Review 점수 | 85점 |
+| Review Gate blockers | 0건 |
+| Review Gate Warnings | 1건 |
+| Consistency Checker BAD-001 | FAIL |
+| JUnit test | Review Gate, Consistency Checker, Human Review, Scoring 계약 테스트 통과 |
 
 이번 구현은 LLM이 생성한 테스트 시나리오를 실제 테스트 자산으로 승격하는 MVP 버전에 불과합니다.
 
 다음 포스팅에서는 MVP에 그치지 않고 원본 invariant 조건을 일부러 악화시킨 변이 조건(Mutant)를 만들고 장애 시나리오에서 이를 해결하는지 확인하는 **Mutation Testing 구조**로 확장하겠습니다. 이를 기반으로 하여 CI/CD Test 파이프라인을 통하여 변경된 비즈니스 코드에 대해서 자동으로 검증하는 구조도 설계 및 구현하도록 하겠습니다.
 
 (추가로 시간이 가능하다면, DDD구조로 구현한 도메인 모델들에 대해서도 같은 구조로 LLM를 이용한 테스트 시나리오 및 테스팅을 진행할 생각입니다.)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 41 }
-
-공유하기

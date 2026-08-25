@@ -1,8 +1,11 @@
 ---
 title: "[Vero] 로그인 실패 후 30분 동안 계정 잠금."
 date: 2025-08-09
+project: Vero
 legacyUrl: "https://codekim3570.tistory.com/11"
----해당 글은 노션에 작성한 글을 티스토리로 재게시했습니다.
+---
+
+해당 글은 노션에 작성한 글을 티스토리로 재게시했습니다.
 
 ## **1\. 배경**
 
@@ -37,7 +40,7 @@ legacyUrl: "https://codekim3570.tistory.com/11"
 -   존재 X
     1.  **RestApiException**으로 **유저의 아이디 혹은 비밀번호가 존재하지 않습니다.** 메세지와 함께 예외를 던져 사용자에게 오류를 전송.
 
-![](https://blog.kakaocdn.net/dna/bGOky4/btsPMUJbA02/AAAAAAAAAAAAAAAAAAAAAAis51l8I1cEhwbTGY0OwJQ0YNJ9FIQd1tPSGXF-WZE5/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=N0W93LPPYqUC%2FHohuGwjmUscDtk%3D)
+![](./01-1ㅈㅇㅁㅇ.png)
 
 로그인 실패 플로우
 
@@ -47,7 +50,7 @@ legacyUrl: "https://codekim3570.tistory.com/11"
 
 #### Member 엔티티
 
-```
+```java
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -93,7 +96,7 @@ public class Member extends BaseEntity {
 
 #### CustomAuthenticationFailureHandler - 계정 잠금 handler
 
-```
+```java
 @Slf4j(topic = "FAILURE_HANDLER")
 @AllArgsConstructor
 @Component
@@ -149,7 +152,7 @@ public class CustomAuthenticationFailureHandler{
 -   **redisCustomService**의 **getRemainingTime** 메서드를 이용해 남은 시간 확인 후 만료 시 새로운 로그인 실패 기록 저장.
 -   **TTL**이 남아있으면 기존 데이터 삭제 후 업데이트하여 로그인 실패 횟수 유지.
 
-![](https://blog.kakaocdn.net/dna/s4Ej3/btsPNo4gkk6/AAAAAAAAAAAAAAAAAAAAAHu4w9uq1yn18FDR3wal4xesWakaTDgmpZzfuffod-7p/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=30D8o9LxuirPss8meAbp1JfYGgY%3D)
+![](./02-스크린샷-2025-03-26-22-08-57.png)
 
 로그인 5회 실패 시
 
@@ -161,25 +164,25 @@ public class CustomAuthenticationFailureHandler{
 
 * * *
 
-![](https://blog.kakaocdn.net/dna/nvAmt/btsPLXfjZxx/AAAAAAAAAAAAAAAAAAAAAGBpX-acoieX4hjU6Ak3DnWJOwVwhRMS7q-Pq3qzOTst/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=qOAntWD9gfUwAgpM7ECaiy9M1hw%3D)
+![](./03-스크린샷-2025-02-27-08-51-57.png)
 
 위와 같은 사용자의 로그인 횟수에 따른 계정 잠금 기능을 구현하던 중 아래 이미지와 같은 오류가 발생했습니다.
 
-![](https://blog.kakaocdn.net/dna/SUWek/btsPM3lOWb9/AAAAAAAAAAAAAAAAAAAAAKZYpCxnjsa69oT-7mKZu87w-JNLSqX9M0h9M9AD6jjP/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=J2LQ%2FugZJ8cR6TCEvi6vb2qMW50%3D)
+![](./04-스크린샷-2025-03-27-01-27-40.png)
 
 오류 로그 이미지
 
 **Spring Data Redis(Lettuce)**를 사용하면서 **RedisSystemException**이 발생하였습니다. 보통 이 오류는 **Redis Server**가 실행되지 않은 상태에서 주로 발생하는 에러입니다.
 
-하지만, **Redis**는 **local환경**에서 문제없이 실행 중이었기 때문에 서버 실행때문임은 아닌듯합니다... 😂
+하지만, **Redis**는 **local환경**에서 문제없이 실행 중이었기 때문에 서버 실행때문임은 아닌듯합니다... 🚨
 
 오류 로그를 자세하게 살펴보면 **RedisCustomServiceImpl.java:24**줄에서 발생하며 **CustomAuthenticationFailureHandler.java:63**줄까지 오류가 이어졌습니다. 즉, **Redis 데이터**를 저장하는 과정에서 문제가 발생한 것입니다!
 
-![](https://blog.kakaocdn.net/dna/dDYr82/btsPNnYBsuI/AAAAAAAAAAAAAAAAAAAAAIaiBAVQY8HZHeVE1wbOkVab4pD6okPDaSB_YQgAsaC1/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=1wDRAo1uLzzyd8ZsRFS2N%2FOduc4%3D)
+![](./05-스크린샷-2025-02-27-08-51-28.png)
 
 RedisCustomServiceImpl.java:24
 
-![](https://blog.kakaocdn.net/dna/lbeG6/btsPMZRfTXK/AAAAAAAAAAAAAAAAAAAAAKdSW95VDdVZTwulx75ga1NX36OHm5l4sVUOm9loK6rc/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=o1JIt72TJppDXi5oJM1OB9ehtZQ%3D)
+![](./06-스크린샷-2025-03-27-01-34-06.png)
 
 CustomAuthenticationFailureHandler.java:63
 
@@ -189,7 +192,7 @@ CustomAuthenticationFailureHandler.java:63
 
 **RedisCustomServiceImpl:java:24**에서 **redisTemplate**의 **opsForValue() 메서드**를 활용한 데이터 저장 시 **만료시간**을 설정하였습니다. 이때, **만료 시간 단위**를 **TimeUnit.SECONDS(초 단위)**로 설정하였습니다. 그러나 실제 데이터를 저장하는 **CustomAuthenticationFailureHandler.java**에서는 설정한 시간을 **밀리초(ms)** 단위로 생각하고 각각 **1,800,000, 600,000**으로 값을 주었습니다. 이를 초 단위로 계산하면 **30,000분과 10,000분**이었던 것입니다! 
 
-![](https://blog.kakaocdn.net/dna/sPh0J/btsPM28gE3T/AAAAAAAAAAAAAAAAAAAAAI6MfFYQBPx9GLSqLaUsJH51YmVzsMC_BCbChwLLuQwA/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=MeREkfhv7u6z%2BMgyrdXa91aAp%2FY%3D)
+![](./07-스크린샷-2025-03-27-01-38-12.png)
 
 ## **3\. 구현**
 
@@ -197,7 +200,7 @@ CustomAuthenticationFailureHandler.java:63
 
 아래 코드와 같이 다시 시간단위를 일괄되도록 **초 단위를 수정**하여 오류를 해결했습니다.
 
-```
+```java
 @Slf4j(topic = "FAILURE_HANDLER")
 @AllArgsConstructor
 @Component
@@ -247,8 +250,4 @@ public class CustomAuthenticationFailureHandler{
 }
 ```
 
-![](https://blog.kakaocdn.net/dna/bwNNbX/btsPNNbExZn/AAAAAAAAAAAAAAAAAAAAAElyA7Ol60cyagGVFEoN4GaUizHbVBjMzIqqWPocRkBQ/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=FirrB3wNnNkrcwRA1WoO%2FUNMd%2B4%3D)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 11 }
-
-공유하기
+![](./08-스크린샷-2025-02-27-08-52-39.png)

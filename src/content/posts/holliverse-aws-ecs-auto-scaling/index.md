@@ -1,8 +1,12 @@
 ---
-title: "[Holliverse] AWS ECS Auto Scaling"
-date: 2026-03-28
+title: "[Holliverse] AWS ECS Auto Scaling - CPU 99.4%찍고 터져 버린 서버 복구기"
+date: 2026-03-29
+project: Holliverse
+tags: ["AWS", "ECS", "병목현상", "오토스케일링", "Fatgate"]
 legacyUrl: "https://codekim3570.tistory.com/36"
----## **1\. 개요**
+---
+
+## **1\. 개요**
 
 프로젝트 막바지에 관리자 API 중 안정성을 확인하기 위해 팀원이 K6를 활용한 경량 부하 테스트를 진행하였다. 이 테스트의 목적은 관리자가 동시에 API를 호출했을 때 서버가 기본적인 응답 성능과 안정성을 유지할 수 있는지 확인하는 것이었다.
 
@@ -29,14 +33,14 @@ legacyUrl: "https://codekim3570.tistory.com/36"
 
 ## **2\. 1차 테스트: ECS 서버 부하 상태 지속**
 
-![](https://blog.kakaocdn.net/dna/cmqHrG/dJMcaiJur7T/AAAAAAAAAAAAAAAAAAAAAEMmfAkS6mie28ndDXcZ9EIrZpRLVsMTARS2yyvPlA4a/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=lrpmfR119NVczHv3QAPKG6vPZ3Q%3D)
+![](./01-스크린샷-2026-03-28-18-24-35.png)
 
 Admin Server CPU Utilization(초록색이 Admin 서버)
 
   
 1차 테스트 구간인 **18:03 ~ 18:06**에서 가장 먼저 확인했던 것은 **ECS CPU 사용률**이였다. **admin-api**는 짧은 시간에 사용률 86%를 넘겼고, 이후 **99.4%**수준까지 상승했다.
 
-![](https://blog.kakaocdn.net/dna/baykLf/dJMcabXWJif/AAAAAAAAAAAAAAAAAAAAAMaF1gl68QuOV8bHu3dLUh3N8FptzAukp6_l_WVzQmJL/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=Xas5%2Bdq5zGk1xLt%2FsbDnB0xzNb4%3D)
+![](./02-스크린샷-2026-03-28-18-26-14.png)
 
 Admin Server Memory Utilization(초록색이 Admin 서버)
 
@@ -44,65 +48,22 @@ Admin Server Memory Utilization(초록색이 Admin 서버)
 
 Java 어플리케이션 관점에서 이러한 상태는 매우 위험하다. GC 부담 증가, 응답 지연, 타임 아웃, 컨테이너 재시작 가능성이 모두 함께 증가한다.
 
-![](https://blog.kakaocdn.net/dna/bjN05O/dJMcaakqLnS/AAAAAAAAAAAAAAAAAAAAAMqM9yvZsprkkOMmy-PM1JgfiiyOwzY9LOcAZbFU2PjE/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=ZizqKZry9H1wlgnqjgL84AGbD8s%3D)
+![](./03-스크린샷-2026-03-28-18-28-00.png)
 
 Admin Server CPU Units Used
 
 **CPU 사용률**을 단순 퍼센트 지표로 보면 체감이 약할 수 있기 떄문에, 실제 사용 CPU 지표도 함께 관측했다. **admin-api**의 **CPU Units Used**는 약 **254** 수준까지 올라갔다. 당시 해당 task에 할당된 CPU가 256이였기 때문에 사실상 예약한 CPU 자원을 한계치로 사용하고 있었다.
 
-**지표**
-
-**개선**
-
-**의미**
-
-admin-api CPU Utilization
-
-최대 99.4%
-
-CPU 포화
-
-customer-api CPU Utilization
-
-최대 96%
-
-동시 병목 발생
-
-admin-api Memory Utilization
-
-최대 99.4%
-
-메모리여유 부족
-
-customer-api Memory Utilization
-
-약 96%
-
-메모리도 거의 포화
-
-admin-api CPU Units Used
-
-약 254 / 256
-
-예약 CPU 상한 근접
-
-Running Task Count
-
-1
-
-단일 태스크 구조
-
-Desired Task Count
-
-1
-
-확장 없음
-
-Pending Task Count
-
-0
-
-scale-out 자체가 안 일어남
+| 지표 | 개선 | 의미 |
+| --- | --- | --- |
+| admin-api CPU Utilization | 최대 99.4% | CPU 포화 |
+| customer-api CPU Utilization | 최대 96% | 동시 병목 발생 |
+| admin-api Memory Utilization | 최대 99.4% | 메모리여유 부족 |
+| customer-api Memory Utilization | 약 96% | 메모리도 거의 포화 |
+| admin-api CPU Units Used | 약 254 / 256 | 예약 CPU 상한 근접 |
+| Running Task Count | 1 | 단일 태스크 구조 |
+| Desired Task Count | 1 | 확장 없음 |
+| Pending Task Count | 0 | scale-out 자체가 안 일어남 |
 
 > **여기서 필자는 왜 이렇게 작은 CPU를 할당했는가에 대해 궁금할 수 있다**.  
 > 우리 서비스 기능(이탈률 감지, 요금제 추천, 사용자 feature 분석, 상담 키워드 분석등)을 구현하고 실제로 배포 환경에서 테스트 하기 위해서 다른 팀보다 일찍 서버를 AWS에 배포하고 시작했다.  
@@ -132,41 +93,13 @@ scale-out 자체가 안 일어남
 
 위의 **Grafana 지표** 관측 결과를 바탕으로 인프라 설정을 다음과 같이 조정했다. **Customer Server**도 동일한 리소스로 변경했다.
 
-**항목**
-
-**변경 전**
-
-**변경 후**
-
-admin-api CPU
-
-256
-
-512
-
-admin-api Memory
-
-512 MiB
-
-1024 MiB
-
-desiredCount
-
-1
-
-2
-
-min capacity
-
-없음
-
-2
-
-max capacity
-
-없음
-
-4
+| 항목 | 변경 전 | 변경 후 |
+| --- | --- | --- |
+| admin-api CPU | 256 | 512 |
+| admin-api Memory | 512 MiB | 1024 MiB |
+| desiredCount | 1 | 2 |
+| min capacity | 없음 | 2 |
+| max capacity | 없음 | 4 |
 
 1차 테스트 당시 admin-api는 사실상 **254/256** 수준까지 CPU를 사용했고, 메모리 역시 **99%**에 가까운 수준까지 올라갔다. 이 상태는 “조금 위험하다”가 아니라, 태스크 하나가 부하를 조금만 더 받아도 바로 tail latency가 튀거나 타임아웃이 날 수 있는 상태에 더 가까웠다.
 
@@ -183,41 +116,13 @@ desiredCount=2 역시 같은 맥락이다.
 
 기본 수용량을 상향한 뒤에는, 그 위에 ECS 오토스케일링 정책을 추가했다.
 
-항목
-
-설정값
-
-이유
-
-min / max
-
-2 / 4
-
-기본 안정성 확보 + 추가 확장 여지 확보
-
-CPU target
-
-65%
-
-CPU 포화 이전에 scale-out 유도
-
-Memory target
-
-75%
-
-JVM 메모리 압박 이전에 확장 유도
-
-scale-out cooldown
-
-60초
-
-빠른 확장
-
-scale-in cooldown
-
-180초
-
-확장 직후 진동 방지
+| 항목 | 설정값 | 이유 |
+| --- | --- | --- |
+| min / max | 2 / 4 | 기본 안정성 확보 + 추가 확장 여지 확보 |
+| CPU target | 65% | CPU 포화 이전에 scale-out 유도 |
+| Memory target | 75% | JVM 메모리 압박 이전에 확장 유도 |
+| scale-out cooldown | 60초 | 빠른 확장 |
+| scale-in cooldown | 180초 | 확장 직후 진동 방지 |
 
   
 1차 테스트에서 CPU와 메모리가 모두 **95~99%** 수준까지 빠르게 치솟았던 만큼, scale-out은 **부하 직전**이 아니라 **부하 이전**에 반응해야 했다. 그래서 CPU 기준은 ***65%***로, Memory 기준은 ***75%***로 두었다.  
@@ -235,13 +140,13 @@ scale-in cooldown
 
 개선 이후 가장 먼저 확인한 지표는 **Desired Task Count**였다. 오토스케일링을 붙였다고 해서, 그것만으로 확장이 잘 됐다고 말할 수는 없기 때문이다. 실제로 부하에 반응해서 원하는 태스크 수가 늘어났는지부터 확인 했다.
 
-![](https://blog.kakaocdn.net/dna/bsevwy/dJMcabcxWPI/AAAAAAAAAAAAAAAAAAAAAI-z5VPHEA6p0a_P1clvmFIALr_GB6cDVu2mYbkPjqx0/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=FwlY8axFNOryWt1DyMerlmqNRYg%3D)
+![](./04-스크린샷-2026-03-28-22-12-40.png)
 
 Admin Server by Desired Task Count
 
 지표를 보면 초기 **desired count**는 2에서 시작했고, 부하가 올라가자 3, 이후에는 4까지 증가했다. 단순히 설정만 등록된 상태가 아니라, **실제로 ECS 서비스가 부하를 감지하고 원하는 태스크 수를 늘리도록 동작했다**.
 
-![](https://blog.kakaocdn.net/dna/beprhN/dJMcahRnyej/AAAAAAAAAAAAAAAAAAAAADUxLnrgUl5i9Hu9a4WK3GI2U7M7inqLbchuuDctMIdP/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=zfIjzoPnr4iUYtyK%2BUkQ65o9ILg%3D)
+![](./05-스크린샷-2026-03-28-22-11-25.png)
 
 Admin Server by Running Task Count
 
@@ -260,13 +165,13 @@ Admin Server by Running Task Count
 
 오토스케일링이 실제로 동작했다면, 다음으로 확인해야 할 것은 **리소스 사용률**이었다. 태스크 수만 늘어났다고 끝이 아니라, 그 결과 CPU와 메모리의 부하가 실제로 완화됐는지를 봐야 했기 때문이다.
 
-![](https://blog.kakaocdn.net/dna/mr9d1/dJMcahX9zCj/AAAAAAAAAAAAAAAAAAAAAEVJBA9MJ5TD_4VjXbXjHBoFrl7YQvH2TxblA6iRTYRE/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=xGxuIgIuuZyHTjQwLLWrvsKKnJ4%3D)
+![](./06-스크린샷-2026-03-29-03-24-34.png)
 
 Admin Server CPU Utilization
 
 개선 후 **CPUUtilization** 지표를 보면 최대치는 **16%** 수준이었다.  이전에는 테스트가 시작되자마자 CPU가 90% 후반까지 급격히 치솟았고, 사실상 상한에 가까운 상태로 바로 들어갔다. 반면 이번에는 부하를 받더라도 컨테이너가 즉시 CPU 상한에 도달하지 않았다.
 
-![](https://blog.kakaocdn.net/dna/bg21ru/dJMcah4V71X/AAAAAAAAAAAAAAAAAAAAAJYfli7h_UzV_SF6GLvSEqXhN_FunEA5NI_P89FBH0R5/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=xh4G%2BO8XulxZi%2B%2B3Mmz%2FmcOrJNE%3D)
+![](./07-스크린샷-2026-03-29-03-25-19.png)
 
 메모리 지표도 비슷했다. 개선 후 메모리 사용률은 대체로 **43.8%**에서 **46.2%** 사이에 머물렀다. 개선 전에는 메모리가 98~99% 수준까지 올라가 있었기 때문에, 사실상 컨테이너 입장에서는 여유가 거의 없는 상태였다.그에 비하면 이번에는 메모리 관점에서 절반 이상의 여유 공간이 새로 생겼다.
 
@@ -303,62 +208,21 @@ CPU는 순간적으로 높아졌다가 다시 내려올 수 있지만, 메모리
 
 ### **1) 개선 후 ECS 동작 지표**
 
-**지표**
-
-**관측값**
-
-**설명**
-
-Desired Task Count
-
-2 → 3 → 4
-
-부하 증가에 따라 원하는 태스크 수 증가
-
-Running Task Count
-
-2 → 4
-
-실제 태스크가 기동되어 요청 분산
-
-Pending Task Count
-
-일시적 증가 후 0 복귀
-
-새 태스크 기동 과정에서 정상적으로 발생
+| 지표 | 관측값 | 설명 |
+| --- | --- | --- |
+| Desired Task Count | 2 → 3 → 4 | 부하 증가에 따라 원하는 태스크 수 증가 |
+| Running Task Count | 2 → 4 | 실제 태스크가 기동되어 요청 분산 |
+| Pending Task Count | 일시적 증가 후 0 복귀 | 새 태스크 기동 과정에서 정상적으로 발생 |
 
 ### **2) 개선 후 리소스 사용률**
 
-**지표**
-
-**개선 전**
-
-**개선 후**
-
-**설명**
-
-CPU Utilization
-
-최대 99.4%
-
-최대 16% 수준
-
-시작 직후 부하되던 구조 완화
-
-Memory Utilization
-
-98~99.4%
-
-43.8~46.2%
-
-메모리 여유 구간 확보
+| 지표 | 개선 전 | 개선 후 | 설명 |
+| --- | --- | --- | --- |
+| CPU Utilization | 최대 99.4% | 최대 16% 수준 | 시작 직후 부하되던 구조 완화 |
+| Memory Utilization | 98~99.4% | 43.8~46.2% | 메모리 여유 구간 확보 |
 
 [one-year-gap
 
 one-year-gap has 10 repositories available. Follow their code on GitHub.
 
 github.com](https://github.com/one-year-gap)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 36 }
-
-공유하기

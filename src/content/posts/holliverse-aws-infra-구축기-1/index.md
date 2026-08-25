@@ -1,8 +1,12 @@
 ---
-title: "[Holliverse] AWS Infra 구축기(1)"
+title: "[Holliverse] AWS Infra 구축기(1) - 내가 AWS CDK를 선택한 이유"
 date: 2026-03-27
+project: Holliverse
+tags: ["인프라", "AWS", "Infra", "IaC", "Holliverse", "유레카 3기"]
 legacyUrl: "https://codekim3570.tistory.com/28"
----![](https://blog.kakaocdn.net/dna/bRTsyt/dJMcaaxXvnv/AAAAAAAAAAAAAAAAAAAAAOWQmxlILemj24qFq3AIre7zkOCeCsrkxykM9i91QZc6/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=d82D9m4Wwgw%2BuVlMkyPVmdreyrQ%3D)
+---
+
+![](./01-5f55074177938273c382f536267ed02a69315518b3063b20.png)
 
 1달 반?만에 포스팅입니다.(프로젝트 너무 바빴어요.. 그래도 우수상 2개 ^^)
 
@@ -55,7 +59,3 @@ AI랑 협업하는 상황에서도 마찬가지였습니다. AI가 코드를 만
 one-year-gap has 10 repositories available. Follow their code on GitHub.
 
 github.com](https://github.com/one-year-gap)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 28 }
-
-공유하기

@@ -1,8 +1,12 @@
 ---
-title: "[Holliverse] 예외처리 고도화"
+title: "[Holliverse] 예외처리 고도화 - 인증 보호율 0% → 100%"
 date: 2026-03-27
+project: Holliverse
+tags: ["예외처리"]
 legacyUrl: "https://codekim3570.tistory.com/32"
----2026년 3월 20일 (금)에 진행한 융합 프로젝트 경진 대회에서 본선 3팀 중 하나로 진출하게 되었다. 그 과정에서 서비스 전반을 다시 점검해보니, 그동안 계속 문제로 남아 있던 예외처리 부족을 이제는 제대로 개선해야겠다는 생각이 들었다.
+---
+
+2026년 3월 20일 (금)에 진행한 융합 프로젝트 경진 대회에서 본선 3팀 중 하나로 진출하게 되었다. 그 과정에서 서비스 전반을 다시 점검해보니, 그동안 계속 문제로 남아 있던 예외처리 부족을 이제는 제대로 개선해야겠다는 생각이 들었다.
 
 ## **1\. 우리 서비스 예외처리의 문제점**
 
@@ -14,7 +18,7 @@ legacyUrl: "https://codekim3570.tistory.com/32"
 
 가장 먼저 눈에 들어온 것은 인증 예외 처리였다. 인증이 필요한 **customer** 쪽 엔드포인트는 **@AuthenticationPrincipal** 사용 기준으로 12개였지만, 테스트 편의 상 모든 엔드포인트를 허가하면서, 실제 Spring Security 설정상 보호되고 있는 엔드포인트는 0개였다. 모든 요청이 permitAll()로 열려 있었기 때문에 인증 실패는 프레임워크 차원에서 처리되지 않았고, 각 컨트롤러가 직접 알아서 처리하고 있었다.
 
-```
+```java
 @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                LoginFilter loginFilter,
@@ -44,7 +48,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http,
 
 일부 컨트롤러는 **customUserDetails**에 대한 null 체크 없이 바로 getMemberId()를 호출하고 있었고, 그 결과 인증이 누락된 요청이 401이 아니라 **NullPointerException**으로 인해 500으로 잘못 분류될 가능성이 있었다.
 
-```
+```java
 @GetMapping("/me")
 public ApiResponse<CustomerProfileResponse> getMyProfile(
         @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -57,7 +61,7 @@ public ApiResponse<CustomerProfileResponse> getMyProfile(
 
 실제로 이런 위험이 있는 엔드포인트가 6개나 존재했다. 반대로 어떤 컨트롤러는 직접 ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증이 필요합니다.")를 던지고 있었다.
 
-```
+```java
 public ApiResponse<RecommendationResponse> getRecommendations(
         @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     if (customUserDetails == null) {
@@ -76,7 +80,7 @@ public ApiResponse<RecommendationResponse> getRecommendations(
 
 예를 들어 상담 생성 요청 DTO인 **CreateCounselDto**.java 는 title, content를 받지만 아무 제약조건이 없다.
 
-```
+```java
 public record CreateCounselDto(
         String title,
         String content
@@ -86,7 +90,7 @@ public record CreateCounselDto(
 
 이를 사용하는 CounselController.java 역시 @Valid 없이 body를 받고 있었다.
 
-```
+```java
 @PostMapping("/counsel")
 public ApiResponse<Long> createCounsel(
         @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -99,7 +103,7 @@ public ApiResponse<Long> createCounsel(
 
 요금제 변경 요청도 비슷했다. ChangeProductRequest.java 의 targetProductId는 사실상 필수값이지만 @NotNull조차 없었다.
 
-```
+```java
 public record ChangeProductRequest(
         Long targetProductId
 ) {}
@@ -107,7 +111,7 @@ public record ChangeProductRequest(
 
 컨트롤러인 SubscriptionController.java 에서도 그대로 사용되고 있었다.
 
-```
+```java
 @PostMapping("/change")
 public ApiResponse<ChangeProductResponse> changePlan(
         @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -123,7 +127,7 @@ public ApiResponse<ChangeProductResponse> changePlan(
 
 내부 webhook 요청도 마찬가지였다. LogFeatureWebhookRequest.java 는 eventType, memberId, timeStamp를 받지만 어떤 필드도 validation으로 보호되지 않았다.
 
-```
+```java
 public record LogFeatureWebhookRequest(
         String eventType,
         Long memberId,
@@ -140,93 +144,18 @@ public record LogFeatureWebhookRequest(
 
 번호 Constraint 이름 위치 대상
 
-1
-
-uk\_address\_unique
-
-V1\_\_init.sql
-
-address(province, city, street\_address)
-
-2
-
-uk\_member\_email
-
-V1\_\_init.sql
-
-member(email)
-
-3
-
-uk\_member\_phone
-
-V1\_\_init.sql
-
-member(phone)
-
-4
-
-uk\_product\_code
-
-V1\_\_init.sql
-
-product(product\_code)
-
-5
-
-uk\_refresh\_token\_hash
-
-V2\_\_create\_refresh\_token\_table.sql
-
-refresh\_token(token\_hash)
-
-6
-
-uk\_category\_group\_category\_name
-
-V6\_\_create\_support\_case\_schema.sql
-
-category\_group(category\_name)
-
-7
-
-uk\_business\_keyword\_code
-
-V8\_\_create\_nlp\_analysis\_tables.sql
-
-business\_keyword(keyword\_code)
-
-8
-
-uk\_billing\_member\_month
-
-V13\_\_add\_family\_group\_and\_billing.sql
-
-billing(member\_id, yyyymm)
-
-9
-
-uk\_case\_id
-
-V14\_\_modify\_consultation\_analysis\_columns.sql
-
-consultation\_analysis(case\_id)
-
-10
-
-uk\_case\_version
-
-V21\_\_add\_athena\_log\_and\_modify\_analysis\_outbox.sql
-
-consultation\_analysis(case\_id, analyzer\_version)
-
-11
-
-uk\_persona\_type\_name\_version
-
-V24\_\_add\_persona\_type.sql
-
-persona\_type(character\_name, version)
+| 1 | uk_address_unique | V1__init.sql | address(province, city, street_address) |
+| --- | --- | --- | --- |
+| 2 | uk_member_email | V1__init.sql | member(email) |
+| 3 | uk_member_phone | V1__init.sql | member(phone) |
+| 4 | uk_product_code | V1__init.sql | product(product_code) |
+| 5 | uk_refresh_token_hash | V2__create_refresh_token_table.sql | refresh_token(token_hash) |
+| 6 | uk_category_group_category_name | V6__create_support_case_schema.sql | category_group(category_name) |
+| 7 | uk_business_keyword_code | V8__create_nlp_analysis_tables.sql | business_keyword(keyword_code) |
+| 8 | uk_billing_member_month | V13__add_family_group_and_billing.sql | billing(member_id, yyyymm) |
+| 9 | uk_case_id | V14__modify_consultation_analysis_columns.sql | consultation_analysis(case_id) |
+| 10 | uk_case_version | V21__add_athena_log_and_modify_analysis_outbox.sql | consultation_analysis(case_id, analyzer_version) |
+| 11 | uk_persona_type_name_version | V24__add_persona_type.sql | persona_type(character_name, version) |
 
 ### 4) 예외 타입의 혼재
 
@@ -236,55 +165,12 @@ persona\_type(character\_name, version)
 
 예외 타입 현재 개수 현재 의미 문제점 목표
 
-CustomException
-
-43
-
-도메인/비즈니스 예외
-
-표준 역할이지만 단독 체계 아님
-
-도메인 예외의 표준 기반
-
-IllegalArgumentException
-
-12
-
-입력 오류/규칙 위반 혼재
-
-400으로 뭉개짐
-
-도메인 예외 또는 validation으로 흡수
-
-IllegalStateException
-
-21
-
-인프라/불변식/개발자 실수 혼재
-
-500으로 뭉개짐
-
-시스템 예외 전용으로 축소
-
-ResponseStatusException
-
-8
-
-컨트롤러 수동 HTTP 예외
-
-응답 계약 불일치
-
-비즈니스 경로 사용 0건
-
-총 혼재 예외 수
-
-84
-
-의미 체계 혼합
-
-실패 분류 불명확
-
-역할별 명확 분리
+| CustomException | 43 | 도메인/비즈니스 예외 | 표준 역할이지만 단독 체계 아님 | 도메인 예외의 표준 기반 |
+| --- | --- | --- | --- | --- |
+| IllegalArgumentException | 12 | 입력 오류/규칙 위반 혼재 | 400으로 뭉개짐 | 도메인 예외 또는 validation으로 흡수 |
+| IllegalStateException | 21 | 인프라/불변식/개발자 실수 혼재 | 500으로 뭉개짐 | 시스템 예외 전용으로 축소 |
+| ResponseStatusException | 8 | 컨트롤러 수동 HTTP 예외 | 응답 계약 불일치 | 비즈니스 경로 사용 0건 |
+| 총 혼재 예외 수 | 84 | 의미 체계 혼합 | 실패 분류 불명확 | 역할별 명확 분리 |
 
 * * *
 
@@ -310,47 +196,14 @@ DB 제약조건 충돌은 **GlobalExceptionHandler** 내부에서 if (msg.con
 
 지표 현재 목표
 
-Security 레벨 인증 보호 엔드포인트
-
-0/12
-
-12/12
-
-수동 인증 null-check 엔드포인트
-
-6/12
-
-0/12
-
-비인증 요청 시 NPE 위험 엔드포인트
-
-6/12
-
-0/12
-
-@RequestBody 검증 적용률
-
-6/15 = 40%
-
-15/15 = 100%
-
-malformed JSON 전역 처리
-
-0종
-
-4종 이상
-
-DB unique constraint 명시 매핑률
-
-2/11 = 18.2%
-
-11/11 = 100%
-
-미사용 ErrorCode 비율
-
-2/27 = 7.4%
-
-0%
+| Security 레벨 인증 보호 엔드포인트 | 0/12 | 12/12 |
+| --- | --- | --- |
+| 수동 인증 null-check 엔드포인트 | 6/12 | 0/12 |
+| 비인증 요청 시 NPE 위험 엔드포인트 | 6/12 | 0/12 |
+| @RequestBody 검증 적용률 | 6/15 = 40% | 15/15 = 100% |
+| malformed JSON 전역 처리 | 0종 | 4종 이상 |
+| DB unique constraint 명시 매핑률 | 2/11 = 18.2% | 11/11 = 100% |
+| 미사용 ErrorCode 비율 | 2/27 = 7.4% | 0% |
 
 * * *
 
@@ -364,7 +217,7 @@ DB unique constraint 명시 매핑률
 
 그래서 이번 개선에서는 에러코드를 단순히 '공용 enum'으로 두지 않고, ****도메인별로 문서화된 코드 체계****로 재구성하는 방향을 선택했다. 핵심 아이디어는 간단하다. 에러의 의미는 각 도메인이 직접 정의하고, 응답 포맷과 로깅 정책만 중앙에서 통제하는 것이다. 이를 위해 공통 규약은 shared/error에 두고, 실제 에러코드는 auth, customer, admin, infra 각 도메인 아래로 분리했다.
 
-```
+```text
 shared/error/
   ErrorSpec.java
   DomainException.java
@@ -392,7 +245,7 @@ infra/error/
 -   중앙 GlobalExceptionHandler는 이 에러를 공통 응답 포맷으로만 변환
 -   로그 포맷, 응답 JSON 구조, traceId 같은 공통 정책은 중앙에서 관리
 
-```
+```java
 public interface ErrorCode {
     HttpStatus httpStatus();
     String code();
@@ -407,7 +260,7 @@ public interface ErrorCode {
 
 이러한 규칙을 바탕으로 인증 도메인에는 아래와 같은 형태의 AuthErrorCode를 정의했다.
 
-```
+```java
 /**
  * [Auth ErrorCode 규칙]
  * <p>
@@ -507,7 +360,7 @@ public enum AuthErrorCode implements ErrorCode {
 
 예를 들면 공통 예외는 다음과 같은 형태가 된다.
 
-```
+```java
 package site.holliverse.shared.error;
 
 public abstract class DomainException extends RuntimeException {
@@ -553,7 +406,7 @@ public abstract class DomainException extends RuntimeException {
 
 이렇게 하면 각 도메인은 자신의 예외 클래스를 매우 얇게 유지할 수 있다. 예를 들어 인증 도메인에서는 AuthException, 고객 도메인에서는 CustomerException을 만들고, 내부적으로는 각 도메인의 ErrorCode enum만 넘겨주면 된다.
 
-```
+```java
 public class AuthException extends DomainException {
 
     public AuthException(AuthErrorCode errorCode) {
@@ -566,7 +419,7 @@ public class AuthException extends DomainException {
 }
 ```
 
-```
+```java
 public class CustomerException extends DomainException {
 
     public CustomerException(CustomerErrorCode errorCode) {
@@ -585,7 +438,7 @@ public class CustomerException extends DomainException {
 
 예외 응답 생성 책임도 핸들러에서 분리해 **ApiErrorResponseFactory** 같은 팩토리로 옮기면 더 명확해진다. 예를 들어 다음과 같은 구조로 정리할 수 있다.
 
-```
+```java
 @Component
 public class ApiErrorResponseFactory {
 
@@ -606,7 +459,7 @@ public class ApiErrorResponseFactory {
 
 그렇게 되면 **GlobalExceptionHandler**는 응답 생성 로직을 직접 들고 있기보다, '어떤 예외를 어떤 방식으로 중앙 정책에 연결할 것인가'에만 집중할 수 있다.
 
-```
+```java
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
@@ -635,7 +488,7 @@ public class GlobalExceptionHandler {
 
 예를 들어 이전에는 다음과 같이 직접 처리하던 로직이 있다.
 
-```
+```java
 if (refreshToken == null || refreshToken.isBlank()) {
     throw new AuthException(AuthErrorCode.REFRESH_TOKEN_MISSING);
 }
@@ -643,7 +496,7 @@ if (refreshToken == null || refreshToken.isBlank()) {
 
 “누가 인증되지 않았는가”는 Security가 판단하고, 애플리케이션은 “인증된 사용자가 어떤 비즈니스 요청을 했는가”만 다루게 한다.
 
-```
+```java
 private final String[] WHITE_LIST = {
         "/api/v1/admin/**",
         "/internal/v1/**",
@@ -678,7 +531,7 @@ private final String[] WHITE_LIST = {
 
 예를 들어 기존 DTO가 다음과 같았다면:
 
-```
+```java
 public record ChangeProductRequest(
         Long targetProductId
 ) {}
@@ -686,7 +539,7 @@ public record ChangeProductRequest(
 
 다음과 같이 바꾼다.
 
-```
+```java
 public record ChangeProductRequest(
         @NotNull(message = "targetProductId는 필수입니다.")
         @Positive(message = "targetProductId는 1 이상이어야 합니다.")
@@ -696,7 +549,7 @@ public record ChangeProductRequest(
 
 그리고 컨트롤러는 다음처럼 받는다.
 
-```
+```java
 @PostMapping("/change")
 public ApiResponse<ChangeProductResponse> changePlan(
         @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -716,7 +569,7 @@ public ApiResponse<ChangeProductResponse> changePlan(
 
 그래서 이 책임을 별도의 매퍼 객체로 분리했다. 핵심 아이디어는 전역 핸들러가 더 이상 constraint 이름을 직접 해석하지 않고, 예외에서 constraint 이름만 추출한 뒤 이를 **ConstraintExceptionMapper**에 위임하는 것이다. 이 매퍼는 constraint 이름을 받아 최종 ErrorCode와 응답 field 정보를 함께 반환한다. 이렇게 하면 전역 핸들러는 '예외를 응답 포맷으로 직렬화하는 역할'에 집중하고, '이 constraint가 어떤 의미를 가지는가'는 매퍼가 책임지게 된다.
 
-```
+```java
 public record ConstraintMapping(
         ErrorCode errorCode,
         String field
@@ -724,7 +577,7 @@ public record ConstraintMapping(
 }
 ```
 
-```
+```java
 @Component
 public class ConstraintExceptionMapper {
 
@@ -746,7 +599,7 @@ unique constraint 충돌은 대부분 특정 필드와 직접 연결되기 때�
 
 전역 예외 처리기 역시 이에 맞게 정리했다. 기존에는 DataIntegrityViolationException을 받으면 메시지에 uk\_member\_email, uk\_member\_phone가 포함되어 있는지를 직접 검사하고, 그 외에는 generic CONFLICT로 내려주고 있었다. 개선 이후에는 예외 메시지에서 constraint 이름만 추출하고, 그 결과를 ConstraintExceptionMapper에 넘겨 최종 매핑을 수행하도록 바꿨다.
 
-```
+```java
 @ExceptionHandler(DataIntegrityViolationException.class)
 public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
     String constraintName = extractConstraintName(ex);
@@ -773,13 +626,13 @@ public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(DataIntegri
 
 이 문제를 해결하기 위해 이번 리팩토링에서는 **비즈니스 실패**를 **DomainException** 계열로 통일했다. 인증 도메인은 AuthException, 고객 도메인은 CustomerException, 관리자 도메인은 AdminException, 인프라 장애는 InfraException으로 나누고, 각각이 자신의 ErrorCode enum을 가지도록 정리했다. 이렇게 하면 예외를 던지는 시점부터 이미 “어느 도메인의 어떤 실패인가”가 코드에 담기고, 전역 핸들러는 이를 공통 응답 형식으로 직렬화하기만 하면 된다.
 
-```
+```java
 throw new IllegalArgumentException("유효하지 않은 회원 상태값입니다.");
 ```
 
 하지만 개선 이후에는 아래처럼 바뀐다.
 
-```
+```java
 throw new AdminException(AdminErrorCode.INVALID_MEMBER_STATUS);
 ```
 
@@ -803,142 +656,23 @@ throw new AdminException(AdminErrorCode.INVALID_MEMBER_STATUS);
 
 항목 개선 전 현재 개선폭 근거
 
-인증 보호 엔드포인트
-
-0/12
-
-12/12
-
-+100%p
-
-@AuthenticationPrincipal 사용 컨트롤러 12개 전부 Security 보호
-
-비인증 요청 500 오분류 위험
-
-6개
-
-0개
-
-\-100%
-
-Security filter chain이 메서드 진입 전 차단
-
-@RequestBody + @Valid 적용률
-
-6/10
-
-10/10
-
-+40%p
-
-body 기반 컨트롤러 10개 전부 @Valid 적용
-
-핵심 검증 누락 DTO
-
-4개
-
-0개
-
-\-100%
-
-CreateCounselDto, ChangeProductRequest, LogFeatureWebhookRequest, AnalysisResponseWebhookRequest 보강
-
-DB unique constraint 명시 매핑률
-
-2/11
-
-2/11
-
-유지
-
-email, phone만 도메인 코드로 명시 매핑
-
-DB constraint 이름 인지 범위
-
-2/11
-
-11/11
-
-+81.8%p
-
-extractConstraintName(...)가 전체 11개 UK 이름 인지
-
-DB constraint 매핑 구조화
-
-없음
-
-있음
-
-구조 개선
-
-ConstraintExceptionMapper + ConstraintMapping 도입
-
-CustomException 사용 수
-
-43
-
-0
-
-\-100%
-
-전부 제거
-
-DomainException 계열 사용 수
-
-0
-
-44
-
-신규 도입
-
-Auth/Customer/Admin/InfraException 합산
-
-도메인 예외 enum-only throw 비율
-
-0%
-
-44/44 = 100%
-
-+100%p
-
-전부 new XxxException(XxxErrorCode.YYY) 형태
-
-ResponseStatusException 사용 수
-
-8
-
-4
-
-\-50%
-
-인증/도메인 경로 상당수 제거
-
-IllegalArgumentException 사용 수
-
-12
-
-8
-
-\-33.3%
-
-일부 비즈니스 예외를 도메인 예외로 전환
-
-IllegalStateException 사용 수
-
-21
-
-20
-
-\-4.8%
-
-시스템/불변식 예외는 대부분 유지
+| 인증 보호 엔드포인트 | 0/12 | 12/12 | +100%p | @AuthenticationPrincipal 사용 컨트롤러 12개 전부 Security 보호 |
+| --- | --- | --- | --- | --- |
+| 비인증 요청 500 오분류 위험 | 6개 | 0개 | -100% | Security filter chain이 메서드 진입 전 차단 |
+| @RequestBody + @Valid 적용률 | 6/10 | 10/10 | +40%p | body 기반 컨트롤러 10개 전부 @Valid 적용 |
+| 핵심 검증 누락 DTO | 4개 | 0개 | -100% | CreateCounselDto, ChangeProductRequest, LogFeatureWebhookRequest, AnalysisResponseWebhookRequest 보강 |
+| DB unique constraint 명시 매핑률 | 2/11 | 2/11 | 유지 | email, phone만 도메인 코드로 명시 매핑 |
+| DB constraint 이름 인지 범위 | 2/11 | 11/11 | +81.8%p | extractConstraintName(...)가 전체 11개 UK 이름 인지 |
+| DB constraint 매핑 구조화 | 없음 | 있음 | 구조 개선 | ConstraintExceptionMapper + ConstraintMapping 도입 |
+| CustomException 사용 수 | 43 | 0 | -100% | 전부 제거 |
+| DomainException 계열 사용 수 | 0 | 44 | 신규 도입 | Auth/Customer/Admin/InfraException 합산 |
+| 도메인 예외 enum-only throw 비율 | 0% | 44/44 = 100% | +100%p | 전부 new XxxException(XxxErrorCode.YYY) 형태 |
+| ResponseStatusException 사용 수 | 8 | 4 | -50% | 인증/도메인 경로 상당수 제거 |
+| IllegalArgumentException 사용 수 | 12 | 8 | -33.3% | 일부 비즈니스 예외를 도메인 예외로 전환 |
+| IllegalStateException 사용 수 | 21 | 20 | -4.8% | 시스템/불변식 예외는 대부분 유지 |
 
 [one-year-gap
 
 one-year-gap has 10 repositories available. Follow their code on GitHub.
 
 github.com](https://github.com/one-year-gap)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 32 }
-
-공유하기

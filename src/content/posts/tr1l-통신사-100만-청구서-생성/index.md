@@ -1,8 +1,12 @@
 ---
-title: "[TR1L] 통신사 100만 청구서 생성"
-date: 2026-03-29
+title: "[TR1L] 통신사 100만 청구서 생성 -  Spring Batch 정산 Job 설계"
+date: 2026-03-30
+project: TR1L
+tags: ["spring", "설계", "spring batch", "배치 시스템"]
 legacyUrl: "https://codekim3570.tistory.com/37"
----## **1\. 개요**
+---
+
+## **1\. 개요**
 
 해당 포스팅에서는 TR1L에서 통신사 월별 청구서 집계를 수행하는 Job를 처음 설계할 때 어떠한 기준으로 구조를 설계했는지 정리하고자 한다. 이번 글은 이후 성능 개선 결과를 설명하는 글이 아니라, **왜 처음부터 청구서 정산 Job을 단순 계산 배치가 아니라 상태를 가진 배치로 설계했는가**를 기록하는 글에 가깝다.
 
@@ -42,11 +46,11 @@ LG U+ 유레카 종합 프로젝트 주제는 100만 명규모의 청구/정산 
 
 이 문제를 막기 위해 정산 Job의 설계는 아래와 같은 흐름으로 고정했다.
 
-![](https://blog.kakaocdn.net/dna/dbgcYo/dJMcafMQsEU/AAAAAAAAAAAAAAAAAAAAANsU0DeRRTiZVY7224YTcoVLfXGxqGpnajzyWVy1apeO/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=MozrmRrtz3LFEttuVpKw2IlRAbg%3D)
+![](./01-option-subscriptions-flow-2026-03-29-184410.png)
 
 정산 Job flow diagram
 
-![](https://blog.kakaocdn.net/dna/eA4QCy/dJMcagdTS4t/AAAAAAAAAAAAAAAAAAAAAI-wOoTqmIO94mUNEZ2WZ8eNCN__fZCzqwiBLJdZQUOs/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=Za6Sbid%2FsYSFSfeRp9%2BWpzEeyGk%3D)
+![](./02-option-subscriptions-flow-2026-03-29-191550.png)
 
 정산 Job Sequence diagram
 
@@ -67,7 +71,7 @@ LG U+ 유레카 종합 프로젝트 주제는 100만 명규모의 청구/정산 
 
 그래서 정산 Job은 AWS Event Bridge가 **cutoff**를 ISO-8601 Instant로 넘기고, 잡 내부에서 이를 한국 시간 기준으로 해석해 전월 **billingYearMonth**를 계산하는 구조로 설계했다. 즉, **cutoff**를 설정하여 이번 달 정산의 기준점을 만들었다.
 
-```
+```java
 @Component
 @Slf4j
 public class CalculateJobContextInitializer implements JobExecutionListener {
@@ -145,7 +149,7 @@ public class CalculateJobContextInitializer implements JobExecutionListener {
 -   재실행이면 기존 **cutoff\_at**을 그대로 유지한다.
 -   이미 **FINISHED**면 바로 **NOOP** 종료한다
 
-```
+```sql
 INSERT INTO billing_cycle (billing_month, status, cutoff_at)
 VALUES (:billingMonth, 'RUNNING', :cutoffAt)
 ON CONFLICT (billing_month)
@@ -184,7 +188,7 @@ Job에서 **billing\_cycle**과 **billing\_targets**는 main DB가 아니라 **t
 
 **MultiJdbcConfig.class**를 통해 2개의 DB 설정을 분리하였고, **MultiTransactionalConfig.class**를 통해 2개의 DB에 대한 트랜잭션 처리를 관리했다.
 
-```
+```java
 @Configuration
 @Slf4j
 public class MultiJdbcConfig {
@@ -269,7 +273,7 @@ public class MultiJdbcConfig {
 }
 ```
 
-```
+```java
 @Configuration
 @EnableTransactionManagement
 public class MultiTransactionalConfig {
@@ -292,7 +296,7 @@ public class MultiTransactionalConfig {
 
 **Step01**의 역할은 단순 조회가 아니라, **정산할 유저당 1행의 입력 스냅샷**을 만든다는 데 있었다.  **billing\_targets**는 아래 역할을 가졌다.
 
-![](https://blog.kakaocdn.net/dna/bAzY1A/dJMcabKrQ5H/AAAAAAAAAAAAAAAAAAAAAPwLkyzdK2Zsi0DgZ5mq2aiPdS28aEo09NP-mYkWjcIq/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=r9t1oXh1CCQtjyMyvavaNwMwRcA%3D)
+![](./03-option-subscriptions-flow-2026-03-29-191744.png)
 
 이렇게 한 이유는 **Step03**에서 유저 단위 계산을 할 때 필요한 값을 **한 번의 row 조회로 가져오게 하기 위해서**였다. 물론 초기 설계에서도 이 방식의 단점을 알고 있었다.
 
@@ -318,7 +322,7 @@ public class MultiTransactionalConfig {
 
 그래서 **Step02**에서는 **billing\_targets**를 다시 읽어 MongoDB의 **billing\_work 컬렉션**에 작업 문서를 생성하도록 설계했다.
 
-```
+```json
 {
   "_id": "2026-01-01:12345",
   "billingMonth": "2026-01-01",
@@ -384,11 +388,11 @@ MongoDB를 별도 Snapshot Store로 분리하면 이 부담을 명확하게 나�
 4.  결과를 **billing\_snapshot**\`에 저장한다.
 5.  성공이면 **CALCULATED**, 유저 단위 오류면 **FAILED**로 상태를 갱신한다.
 
-![](https://blog.kakaocdn.net/dna/cfwR6T/dJMb99Z98AX/AAAAAAAAAAAAAAAAAAAAAAelfMOJRayeiC95bFp9wSHVDg8qEuh4LfYBYeVdnU3Q/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=pwT2Ltlv7L%2Fjnn5%2BnrVH9Z4w7%2FU%3D)
+![](./04-option-subscriptions-flow-2026-03-29-193907.png)
 
 Step03 계산 Sequence diagram
 
-![](https://blog.kakaocdn.net/dna/bqQuVC/dJMcacvOuhC/AAAAAAAAAAAAAAAAAAAAAHxX-Po1sNHqiP1JOzYLXs_kt9Dz731xxNIMNB3HxZXs/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=9EJ0oI%2FjgAkguNAluiZnRw3ynYw%3D)
+![](./05-option-subscriptions-flow-2026-03-29-194223.png)
 
 Step03 계산 State Diagram
 
@@ -398,7 +402,7 @@ Step03 계산 State Diagram
 
 Mongo  **findAndModify**를 반복 호출하는 방식으로 선점을 구현했다.
 
-```
+```java
     Query q = new Query();
     q.addCriteria(new Criteria().andOperator(
             Criteria.where("billingMonth").is(bm),
@@ -458,7 +462,3 @@ Mongo  **findAndModify**를 반복 호출하는 방식으로 선점을 구현�
 TR1L has 2 repositories available. Follow their code on GitHub.
 
 github.com](https://github.com/Team-TR1L)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 37 }
-
-공유하기

@@ -1,8 +1,12 @@
 ---
 title: "[LG 유플러스] 유레카 3기 백엔드 대면 합격 후기"
 date: 2025-08-13
+category: 유레카
+tags: ["합격후기", "유레카", "부트캠프", "lg u+"]
 legacyUrl: "https://codekim3570.tistory.com/14"
----![](https://blog.kakaocdn.net/dna/cNzJQI/btsPRCWoqhH/AAAAAAAAAAAAAAAAAAAAAGolHF4NPIuSnQPhay3JspWivr-ox5cAzqhgLRxles3w/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=8wjitqZezsNbq%2BRdVSV6T9l7BdU%3D)
+---
+
+![](./01-bff224c8-d7a7-4179-9d22-9bd4675312b2-jpg.jpg)
 
 ## **개요**
 
@@ -40,7 +44,7 @@ legacyUrl: "https://codekim3570.tistory.com/14"
 
 2번째 문항은 실제 저의 프로젝트 진행했던 문제 중 성능 문제에 대해 자세하게 기술하였으며 이를 통해 얻은 점을 서술했습니다. 유레카 유투브를 통해 자세한 커리큘럼을 확인하고 이를 유레카를 통해 이루고 싶은 목표와 연관되게 작성했습니다.
 
-![](https://blog.kakaocdn.net/dna/w3gLv/btsPR9mdemF/AAAAAAAAAAAAAAAAAAAAAHoO1hMrMXeQQLw8T-G4qlEKt4JDmXvX2wVOrxbVgdJE/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=Evt%2BWqb0s0QPbs%2BkMzq0YvVSNlw%3D)
+![](./02-img-f2dba64c0b83-1.jpg)
 
 ### **코딩 테스트**
 
@@ -62,7 +66,7 @@ www.inflearn.com](https://www.inflearn.com/course/%EC%9E%90%EB%B0%94-%EC%BD%94%E
 
 을 하였습니다. 체감 상 백준 기준으로 **1번째 문제는 실버1** 정도였고, **2번째 문제는 실버1~골드5**정도 였습니다. 중간에 계속 화면이 꺼지는 문제가 있어서 시간이 조금 부족하여 1번째 문제라도 모두 풀자는 마인드로 응시했습니다.
 
-![](https://blog.kakaocdn.net/dna/cFD4sR/btsPRGR9hat/AAAAAAAAAAAAAAAAAAAAAH9s8o_8g3OdyybOuotyFHq67iNuWYVIMa_SqGR3g426/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=X2%2F3ed8keZfyyJSGzvaytNTdqgU%3D)
+![](./03-img-da9ece8a1af2-1.jpg)
 
 ### **면접**
 
@@ -77,10 +81,6 @@ www.inflearn.com](https://www.inflearn.com/course/%EC%9E%90%EB%B0%94-%EC%BD%94%E
 
 면접 당일날, 저는 B조로 배정되었고 앞에 4~5팀이 먼저 면접을 진행했습니다. 당일날만 보면 면접자들을 대략 100명 조금 안되었던 것 같습니다. 백엔드 대면과 비대면 지원자들과 같이 섞어서 면접을 진행했던 것 같습니다.
 
-![](https://blog.kakaocdn.net/dna/bDYHXU/btsPP3mTwYI/AAAAAAAAAAAAAAAAAAAAAKn66F2KmN5-UTHpMEq614AR0JPu__yMi2BViyiwaysc/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=T5C9E8vo7ZIx8NSQA9yE4ZHZfA4%3D)
+![](./04-img-d9d28590cf24-1.jpg)
 
 앞으로 7개월간의 **유레카** 교육을 통해 뛰어난 팀원들과 다양한 프로젝트를 진행하며 기술적으로 뿐만 아니라 저의 진로에 있어 확실한 직무성을 지닐 수 있는 개발자가 되도록 노력해보겠습니다!
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 14 }
-
-공유하기

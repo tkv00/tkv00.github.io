@@ -1,8 +1,12 @@
 ---
-title: "[DB-STUDY] 3주차"
+title: "[DB-STUDY] 3주차 - 트랜잭션/잠금"
 date: 2025-12-21
+category: 데이터베이스
+tags: ["데이터베이스", "mysql", "database", "CS", "db", "데이터 베이스"]
 legacyUrl: "https://codekim3570.tistory.com/20"
----**Ureca 3기 - 백엔드 대면 교육**을 들으며 따로 진행한 약 8주간의 데이터베이스 스터디 내용입니다.
+---
+
+**Ureca 3기 - 백엔드 대면 교육**을 들으며 따로 진행한 약 8주간의 데이터베이스 스터디 내용입니다.
 
 [https://github.com/Study-Castle/Database\_Study](https://github.com/Study-Castle/Database_Study)
 
@@ -32,7 +36,7 @@ github.com](https://github.com/Study-Castle/Database_Study)
 
 ### 트랜잭션 상태
 
-![](https://blog.kakaocdn.net/dna/srjo5/dJMcaiWajsn/AAAAAAAAAAAAAAAAAAAAAMytgBKiQ72UANNc-vbtmocC5LB4iLSBtSR12D6Rkd1P/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=36dS2L806prDFbGIIsFAPbShEOg%3D)
+![](./01-스크린샷-2025-11-12-13-13-07.png)
 
 1.  **`활성`**
     1.  트랜잭션이 정상적으로 실행중인 상태.
@@ -70,7 +74,7 @@ github.com](https://github.com/Study-Castle/Database_Study)
 
 ### READ UNCOMMITED
 
-![](https://blog.kakaocdn.net/dna/kTbD9/dJMcaiIDvH1/AAAAAAAAAAAAAAAAAAAAAN9BVvS3bEFRR9nGqyC6ow9sHrwUIXO0Bhyi4xO18KDa/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=mnnnv30ZjNWSRcbNNL%2FIkTNKH14%3D)
+![](./02-다운로드-13.png)
 
 1.  **사용자 A**가 `emp_no = 50000`, `first_name = ‘JuBal’` 사원 Insert
 2.  **사용자 B**가 **사용자 A**가 변경한 내용 커밋 이전에 `emp_no = 50000`인 사원 조회
@@ -92,13 +96,13 @@ github.com](https://github.com/Study-Castle/Database_Study)
 
 -   언두 영역은 UPDATE / DELETE와 같은 문장을 데이터를 변경했을 때 변경되기 전 데이터를 보관하는 곳(백업 공간)
 
-![](https://blog.kakaocdn.net/dna/wEHHc/dJMcahQw7sv/AAAAAAAAAAAAAAAAAAAAAEQGgmvCx53xYKJx7iByk74UX-EN9-uIQAuLTUG8Y-HM/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=iM07ElhpNSsBwwWc7JEyXXCMHpc%3D)
+![](./03-다운로드-14.png)
 
 1.  **사용자 A**가 `emp_no = 50000`인 사원의 `first_name`을 **JuBal**에서 **Toto** 수정
 2.  **Toto**는 `employees` 테이블에 즉시 기록 → 이전 값 **Jubal**은 **Undo**영역에 백업
 3.  **사용자 A**가 커밋이전 **사용자 B**가 emp\_no = 50000인 사원 조회 시 이전 값인 **JuBal**이 조회됨. ← **Undo**영역의 백업 레코드에 결과를 조회.
 
-![](https://blog.kakaocdn.net/dna/vuKiI/dJMcaacN4xM/AAAAAAAAAAAAAAAAAAAAADVrhe5aEHo6Jyxp-d3aHpT_XB4m8EI-tMlhQzYvprHJ/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=yZ%2BZMm9NBDhfBasSCfejpkWfmEc%3D)
+![](./04-다운로드-16.png)
 
 ### 🚨🚨🚨 Non-Repeatable Read 발생!
 
@@ -117,7 +121,7 @@ github.com](https://github.com/Study-Castle/Database_Study)
 -   MySQL의 InnoDB 스토리지 엔진에서 기본 사용되는 격리 수준.
 -   ***Non-Repeatable Read*** 발생 ❌
 
-![](https://blog.kakaocdn.net/dna/ulUQN/dJMcaaKDVsj/AAAAAAAAAAAAAAAAAAAAAABNwtDNITh35rtenwwNlBSThhMhmCbU4gPJeVqS9mp_/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=iNOTggj9shv58llT0GceD9DthHc%3D)
+![](./05-다운로드-17.png)
 
 1.  **사용자 A**의 트랙잭션 번호 = 12 / **사용자 B**의 트랜잭션 번호 = 10
 2.  **사용자 A**가 사원의 이름을 Toto로 변경 후 커밋
@@ -148,7 +152,7 @@ github.com](https://github.com/Study-Castle/Database_Study)
 
 ### 글로벌 락
 
-```
+```sql
 FLUSH TABLES WITH READ LOCK
 ```
 
@@ -160,7 +164,7 @@ FLUSH TABLES WITH READ LOCK
 
 ### 테이블 락
 
-```
+```sql
 LOCK TABLES table_name [ READ | WRITE ]
 ```
 
@@ -174,7 +178,7 @@ LOCK TABLES table_name [ READ | WRITE ]
 
 ### 네임드 락
 
-```
+```sql
 GET_LOCK()
 ```
 
@@ -192,7 +196,7 @@ GET_LOCK()
     -   사용자가 입력하는 `카테고리명`에 대해서만 ***NAMED\_LOCK*** 수행.
 -   상황 : `100`명의 사용자가 동시에 지출 내역의 새로운 카테고리 생성 요청 → Race Condition 발생
 
-```
+```java
 @Repository 
 public interface LockRepository extends JpaRepository<CategoryExpend,Long> { 
 	@Query(value = "select get_lock(:key,10)",nativeQuery = true) Integer getLock(@Param("key") String key); 
@@ -212,7 +216,7 @@ public interface LockRepository extends JpaRepository<CategoryExpend,Long> {
 -   스토리지 엔진 내부에서 레코드 기반의 잠금 방식.
 -   MySQL 서버의 i`nformation_schema` - `INNODB_TRX`, `INNODB_LOCKS`, `INNODB_WAITS` 테이블 조인 후 조회 시 어떤 트랜잭션이 어떤 잠금을 대기하며 가지고 있는지 확인 가능.
 
-![](https://blog.kakaocdn.net/dna/8VU6l/dJMb9952Lg6/AAAAAAAAAAAAAAAAAAAAAOqrUqf9SB6y0lE_SqSqJuNwc01yRVFkxMTTYNfzWSij/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=TyLXKHASDnMpRbMoM6MQaihDOh4%3D)
+![](./06-img-1344.jpg)
 
 ### 레코드 락
 
@@ -237,7 +241,3 @@ public interface LockRepository extends JpaRepository<CategoryExpend,Long> {
 -   `INSERT` / `REPLACE` 쿼리 문장과 같이 새로운 레코드를 저장하는 쿼리에서만 필요.
 -   AUTO\_INCREMENT 값을 가져오는 순간만 락이 걸렸다가 즉시 해제.
 -   명시적으로 획득하고 해제하는 방법은 ❌
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 20 }
-
-공유하기

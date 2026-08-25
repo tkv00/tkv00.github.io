@@ -1,18 +1,21 @@
 ---
 title: "[Vero] NoOffset + Slice 무한 스크롤 구현하기"
 date: 2025-07-26
+project: Vero
 legacyUrl: "https://codekim3570.tistory.com/10"
----**해당 글은 노션에 작성한 글을 티스토리로 재게시했습니다.**
+---
+
+**해당 글은 노션에 작성한 글을 티스토리로 재게시했습니다.**
 
 ## **1\. 배경**
 
 * * *
 
-![](https://blog.kakaocdn.net/dna/M0y8N/btsPAxnwSRA/AAAAAAAAAAAAAAAAAAAAAKIVXUDIPo1IpP2XB3uzhedAiLXnk3JNOThFjUhJoVUq/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=KxCQ8o98mAAVzQX%2FEQHavJOabco%3D)
+![](./01-ㅁㄴㄹㅊㅋㅌ.png)
 
 Vero LLM 대화 이미지(1)
 
-![](https://blog.kakaocdn.net/dna/bqaySD/btsPAkILfYd/AAAAAAAAAAAAAAAAAAAAAPq7pN3mmosAPOcnzZix_4N-SujQL8lMktjOeK_Nkasf/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=ilBnbcpWUZLKWK9WRSkTEcRjpy4%3D)
+![](./02-ㅁㄴㅌㅁㄴㅇㅊㅌㅋㅊㅋㅌㅊ.png)
 
 Vero LLM 대화 이미지(2)
 
@@ -38,7 +41,7 @@ Vero LLM 대화 이미지(2)
 
 * * *
 
-```
+```java
  @Override
     public ChatTotalDetailResponseDto getSliceOfChatting(Long chatRoomId, Long chatId,Long memberId,int size,AIModelType type) {
         //채팅 상세 목록 조회
@@ -87,7 +90,7 @@ Vero LLM 대화 이미지(2)
 
 #### **memberIdEq**
 
-```
+```java
    private BooleanExpression memberIdEq(Long memberId){
         return memberId==null ? null : member.memberId.eq(memberId);
     }
@@ -97,7 +100,7 @@ Vero LLM 대화 이미지(2)
 
 #### **chatRoomIdEq**
 
-```
+```java
  private BooleanExpression chatRoomIdEq(Long chatRoomId){
         return chatRoomId == null ? null : chatRoom.chatRoomId.eq(chatRoomId);
     }
@@ -107,7 +110,7 @@ Vero LLM 대화 이미지(2)
 
 #### **gtChatId**
 
-```
+```java
 private BooleanExpression gtChatId(Long chatId){
         return (chatId != null && chatId > 0) ? chat.chatId.lt(chatId) : null;
     }
@@ -117,7 +120,7 @@ private BooleanExpression gtChatId(Long chatId){
 
 #### **aiTypeEq**
 
-```
+```java
 private BooleanExpression aiTypeEq(AIModelType ai){
         return ai==null ? null : chat.modelType.eq(ai);
     }
@@ -127,7 +130,7 @@ private BooleanExpression aiTypeEq(AIModelType ai){
 
 #### **allEq**
 
-```
+```java
 private BooleanExpression allEq(Long chatRoomId, Long chatId, Long memberId,AIModelType type) {
         BooleanExpression condition = chatRoomIdEq(chatRoomId);
         BooleanExpression chatCondition = gtChatId(chatId);
@@ -154,7 +157,3 @@ private BooleanExpression allEq(Long chatRoomId, Long chatId, Long memberId,AIMo
 ```
 
 -   위의 **memberIdEq,gtChatId,chatRoomId,aiTypeEq**의 결합된 조건을 반환한다.
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 10 }
-
-공유하기

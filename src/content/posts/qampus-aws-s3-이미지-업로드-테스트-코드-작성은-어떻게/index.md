@@ -1,8 +1,11 @@
 ---
 title: "[Qampus] AWS S3 이미지 업로드 테스트 코드 작성은 어떻게?"
 date: 2025-08-12
+project: Qampus
 legacyUrl: "https://codekim3570.tistory.com/13"
----## **1\. 배경**
+---
+
+## **1\. 배경**
 
 * * *
 
@@ -16,18 +19,18 @@ legacyUrl: "https://codekim3570.tistory.com/13"
 
 **Gradle.build 설정**
 
-```
+```groovy
 implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.3.0'
 implementation 'com.amazonaws:aws-java-sdk-s3:1.12.781'
 ```
 
-![](https://blog.kakaocdn.net/dna/cTfVUP/btsPO7bgF1J/AAAAAAAAAAAAAAAAAAAAABVCJTWwgjwMr-7C5tgVH8UF97uL9HdsVP6jXFZuejtw/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=D%2BbhehhMnUDev%2FLfGkDrEBdPdvc%3D)
+![](./01-스크린샷-2025-02-19-15-42-14.png)
 
 AWS S3 라이브러리
 
 **NCP 개인 설정**을 통해 **secretKey**와 **accessKey**를 발급을 받고 아래와 같이 버킷을 생성한 후 디렉토리를 구성했습니다. **Qampus**에서 이미지를 사용하는 부분이 질문과 답변이므로 **question**과 **answer**로 디렉토리를 설정했습니다.
 
-![](https://blog.kakaocdn.net/dna/qmbxB/btsPPOP4zUP/AAAAAAAAAAAAAAAAAAAAAI9Z5pYNj0uKUBQzCsPHPVFZtIn2-lIaigYP3O9lF3hv/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=M4HgXAPryyuG%2B9SSiCkWaa6YwJY%3D)
+![](./02-스크린샷-2025-02-19-15-43-05.png)
 
 NCP 버킷
 
@@ -39,7 +42,7 @@ NCP 버킷
 
 이미지 <-> 답변(다대일,단방향 매핑)  이미지 <-> 질문 (다대일,단방향 매핑)
 
-```
+```java
 @Entity
 @Getter
 @Setter
@@ -70,7 +73,7 @@ public class Image extends BaseEntity {
 
 #### **이미지 서비스 인터페이스**
 
-```
+```java
 public interface ImageService {
     List<String> putFileToBucket(List<MultipartFile> files, String type);
 }
@@ -78,7 +81,7 @@ public interface ImageService {
 
 #### **이미지 서비스 구현**
 
-```
+```java
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
@@ -129,7 +132,7 @@ public class ImageServiceImpl implements ImageService {
 3.  **List형식**의 이미지를 제공받아 **for문**을 통해 모든 이미지 파일의 메타데이터를 저장합니다.
 4.  **UUID형식**으로 이미지의 파일명을 생성하고 **AWS S3라이브러리**의 **PutObjectRequest** 객체를 이용하여 생성한 파일 이름과 함께 파일을 업로드한 후 업로드한 파일이름을 다른 서비스 계층에서 DB에 저장하기 위해 **String** 리스트로 반환합니다.
 
-![](https://blog.kakaocdn.net/dna/bkyXzt/btsPP812d8j/AAAAAAAAAAAAAAAAAAAAAKoE91EYqov0yQWJQhcZjgYW_SK68C5QxlYAk8r5QXEF/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=%2F%2FgyrlWG%2FyFiEmi9fTUVxNrg1v4%3D)
+![](./03-스크린샷-2025-02-19-16-02-32.png)
 
 NCP 이미지 업로드 실행
 
@@ -145,14 +148,14 @@ NCP 이미지 업로드 실행
 
    a. 기존 **AmazonClient** 대신 직접 구현한 **AmazonS3Service**를 주입합니다.
 
-```
+```java
 public interface AmazonS3Service {
     void putObject(PutObjectRequest request);
     URL getUrl(String bucketName, String fileName);
 }
 ```
 
-```
+```java
 @RequiredArgsConstructor
 @Service
 public class AmazonServiceImpl implements AmazonS3Service{
@@ -170,7 +173,7 @@ public class AmazonServiceImpl implements AmazonS3Service{
 }
 ```
 
-```
+```java
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
@@ -214,7 +217,7 @@ public class ImageServiceImpl implements ImageService {
 
 2\. 테스트 코드는 아래와 같이 성공케이스와 실패케이스로 분할하여 구성하였습니다.
 
-```
+```java
 @SpringBootTest
 class ImageServiceImplTest {
 
@@ -285,7 +288,7 @@ class ImageServiceImplTest {
 
 -   실제 **AWS S3**이미지 **API**를 호출하여 비용을 소모하는 방법보다 **@MockitoBean**를 이용하여 **가짜 의존성**을 주입하여 테스트를 진행하였습니다.
 
-```
+```java
 when(multipartFile.getContentType()).thenReturn("image/jpeg");
         when(multipartFile.getSize()).thenReturn((long)fileContent.length);
         when(multipartFile.getOriginalFilename()).thenReturn(FILE_NAME);
@@ -295,7 +298,3 @@ when(multipartFile.getContentType()).thenReturn("image/jpeg");
 -   **MultipartFile**를 직접 만들지 않고 **@Mock**를 이용하여 **가짜객체**로 사용함으로써 실제 서비스에서 작동할 때 호출되는 메서드에 대해 예측값들을 넣어줍니다.
 -   서비스단에서 **AmazonS3Service**의 메서드 **putObject**, **getUrl**이 각각 1번씩 호출되었는지 확인하고 **성공 케이스 테스트**를 종료합니다.
 -   이미지 업로드 예외인 **IOException**값을 **RestApiException**으로 예외를 제대로 던지는지 확인하고 해당 **예외처리 메시지**를 확인하고 해당 **예외처리 메시지**를 확인하며 테스팅을 종료합니다.
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 13 }
-
-공유하기

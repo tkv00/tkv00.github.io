@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-label="TR1L layered context">
+  <defs>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #1a1a1a; }
+      .subtitle { font: 400 16px Arial, sans-serif; fill: #4b5563; }
+      .label { font: 700 20px Arial, sans-serif; fill: #111827; }
+      .body { font: 400 15px Arial, sans-serif; fill: #374151; }
+      .api { fill: #eff6ff; stroke: #2563eb; stroke-width: 2.5; rx: 18; ry: 18; }
+      .app { fill: #fef3c7; stroke: #d97706; stroke-width: 2.5; rx: 18; ry: 18; }
+      .domain { fill: #eefbf2; stroke: #16a34a; stroke-width: 2.5; rx: 18; ry: 18; }
+      .adapter { fill: #fdf2f8; stroke: #db2777; stroke-width: 2.5; rx: 18; ry: 18; }
+      .port { fill: #f8fafc; stroke: #64748b; stroke-dasharray: 8 6; stroke-width: 2; rx: 14; ry: 14; }
+      .arrow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="700" fill="#fcfcfd"/>
+
+  <text x="60" y="56" class="title">Layered Context Design</text>
+  <text x="60" y="84" class="subtitle">Representative shape used in TR1L Billing Context</text>
+
+  <rect x="110" y="130" width="980" height="90" class="api"/>
+  <text x="145" y="170" class="label">API / Public Contract</text>
+  <text x="145" y="198" class="body">usecase interface, event DTO, batch-facing contract</text>
+
+  <line x1="600" y1="220" x2="600" y2="270" class="arrow"/>
+
+  <rect x="110" y="270" width="980" height="120" class="app"/>
+  <text x="145" y="312" class="label">Application Layer</text>
+  <text x="145" y="340" class="body">Use case orchestration, transaction boundary, command/result DTO</text>
+  <rect x="770" y="295" width="260" height="70" class="port"/>
+  <text x="800" y="325" class="label">Outbound Ports</text>
+  <text x="800" y="350" class="body">save / load / publish interfaces</text>
+
+  <line x1="600" y1="390" x2="600" y2="440" class="arrow"/>
+
+  <rect x="110" y="440" width="980" height="140" class="domain"/>
+  <text x="145" y="482" class="label">Domain Layer</text>
+  <text x="145" y="510" class="body">Aggregate, Entity, VO, Enum, Domain Service, Domain Policy</text>
+  <text x="145" y="538" class="body">Examples: Billing, ChargeLine, DiscountLine, Money, Recipient, BillingCalculator</text>
+
+  <line x1="600" y1="580" x2="600" y2="630" class="arrow"/>
+
+  <rect x="110" y="630" width="980" height="40" class="adapter"/>
+  <text x="145" y="657" class="label">Adapters / Infra: JDBC, JPA, Mongo, Kafka, S3</text>
+</svg>

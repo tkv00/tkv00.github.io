@@ -1,8 +1,12 @@
 ---
-title: "[Holliverse] AWS Infra 구축기(2)"
+title: "[Holliverse] AWS Infra 구축기(2) - Network 설계 / 구현"
 date: 2026-03-27
+project: Holliverse
+tags: ["network", "AWS", "ECS", "ALB", "NAT Gateway"]
 legacyUrl: "https://codekim3570.tistory.com/29"
----## **1\. 개요**
+---
+
+## **1\. 개요**
 
 이번 인프라를 설계하면서 가장 먼저 고민한 주제는 기능이 아니라 **보안 경계**였습니다. **Holliverse**는 구조상 고객용 웹앱과 관리자용 백오피스가 함께 존재합니다. 고객용 서비스는 누구나 접속할 수 있어야 하지만, 관리자 페이지는 그렇게 두면 안 된다고 생각했습니다. 관리자 기능은 회사 내부나 허용된 특정 IP 대역에서만 접근 가능해야 했고, 그 기준은 애플리케이션 코드가 아니라 **네트워크 구조 자체**에서 먼저 보장되어야 했습니다.
 
@@ -22,7 +26,7 @@ legacyUrl: "https://codekim3570.tistory.com/29"
 비용도 검토했습니다.  
 ALB는 시간당 0.0225달러가 발생하고, 2개를 사용하면 월 기준 약 16.2달러의 고정비가 추가됩니다. 절대 무시할 수 있는 비용은 아니지만, 이번 프로젝트에서는 이 비용보다 **관리자 영역을 명확하게 분리해 운영할 수 있다는 점**이 더 중요했습니다. 보안은 문제가 생긴 뒤에 보강하는 것이 아니라, 구조를 설계할 때부터 반영해야 한다고 생각했기 때문입니다.
 
-![](https://blog.kakaocdn.net/dna/bCop2d/dJMcabwQeSd/AAAAAAAAAAAAAAAAAAAAAKBgYZABn5ducgorvbTAz2YrDrwXUjfl4ahM0ycXqMtU/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=wq9aJvj8Ie%2F1zX3aQpb%2BAZ%2BeUCk%3D)
+![](./01-스크린샷-2026-03-26-21-24-11.png)
 
 AWS ALB 비용
 
@@ -39,7 +43,7 @@ AWS ALB 비용
 
 ## **2\. 전체 네트워크 구조 한눈에 보기**
 
-![](https://blog.kakaocdn.net/dna/AxzmS/dJMcaiJtvLJ/AAAAAAAAAAAAAAAAAAAAALzVdK9L5Xa_9Y7QCXnEUC5VBRX5VbIacV1GrIpxpDUW/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=iS7Di2EpYc4PK5P4GVN%2Fkepf81w%3D)
+![](./02-네트워크-1.png)
 
 Holliverse Infra Network Architecture
 
@@ -57,7 +61,7 @@ Holliverse Infra Network Architecture
 
 VPC는 2개의 가용영역(Availability Zone)을 기준으로 구성했고, 각 AZ에 Public Subnet과 Private Subnet이 생성되도록 설계했습니다. 코드로 보면 아래와 같습니다.
 
-```
+```java
 /*
  * =================================================================
  *                              VPC
@@ -94,7 +98,7 @@ this.vpc = Vpc.Builder.create(this, "AppVpc")
 
 현재 **NetworkStack**은 고객용 ALB, 고객용 API, 관리자용 ALB, 관리자용 웹, 관리자용 API, DB, MSK 브로커, 모니터링, Kafka Connect용 Security Group을 각각 따로 두는 **'최소 권한 규칙'**을 지키고자 했습니다. 그리고 대부분의 **Security Group**에 **allowAllOutbound(false)**를 적용해, 아웃바운드도 기본 허용이 아니라 명시 허용 방식으로 가져갈 수 있도록 했습니다.
 
-```
+```java
 /*
  * =================================================================
  *                         Security Group
@@ -117,7 +121,7 @@ this.customerApiSg = SecurityGroup.Builder.create(this, "CustomerApiSg")
 
 "내부망이니까 열어도 된다"는 식의 느슨한 네트워크 구성을 피하려고 했습니다. 예를 들어 customer-api는 HTTPS와 DNS 정도의 외부 아웃바운드만 열고, DB와 MSK는 각 전용 **Security Group**으로만 나갈 수 있습니다. 5432나 9098 포트를 인터넷 전체로 열지 않고, 목적지를 **Security Group ID**로 제한했습니다.
 
-```
+```java
 /*
  * =================================================================
  *                   Customer Rules
@@ -150,7 +154,7 @@ customerApiSg.addEgressRule(
 
 이 아키텍처에서 인터넷에 직접 노출되는 리소스는 사실상 두 개의 ALB뿐입니다. 하나는 고객용 API 앞단의 **Customer ALB**이고, 다른 하나는 관리자 화면 앞단의 **Admin ALB**입니다. 둘 다 퍼블릭 서브넷에 배치되어 있지만, 접근 정책은 완전히 다르게 가져갔습니다.
 
-```
+```java
 this.customerAlb = ApplicationLoadBalancer.Builder.create(this, CUSTOMER_ALB)
         .vpc(loadBalancerProps.vpc())
         .internetFacing(true)
@@ -162,7 +166,7 @@ this.customerAlb = ApplicationLoadBalancer.Builder.create(this, CUSTOMER_ALB)
 
 고객용 ALB는 공개 API 진입점이므로 인터넷 전체에서 80, 443 접근을 받습니다. 다만 80 포트는 HTTPS 리다이렉트 전용이고, 실제 요청 처리는 443 리스너에서 이뤄집니다. ALB 뒤의 **customer-api**는 여전히 프라이빗 서브넷에 있고, **customerAlbSg**에서 오는 트래픽만 받습니다.
 
-```
+```java
 allowedIpList.forEach(ip -> {
     adminAlbSg.addIngressRule(Peer.ipv4(ip), NetworkConstants.HTTP, "Admin HTTP from allowed IP");
     adminAlbSg.addIngressRule(Peer.ipv4(ip), NetworkConstants.HTTPS, "Admin HTTPS from allowed IP");
@@ -177,7 +181,7 @@ allowedIpList.forEach(ip -> {
 
 ## **6\. 서비스 간 통신은 "필요 조합"만 Open**
 
-![](https://blog.kakaocdn.net/dna/EPJoK/dJMcafMO5fH/AAAAAAAAAAAAAAAAAAAAAI2qF7NNtK-rW4Xp9houSdoIJ0IjtKPibcA4FlMwMMu5/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=F3wfQnUQw%2FtympDyHxJTaYvTFqs%3D)
+![](./03-mermaid-diagram-7.png)
 
 같은 VPC 안에 있다고 해서 전부 열어 두면, 구조가 복잡해질수록 어디서 어디로 붙는지 파악하기가 어려워진다고 생각했습니다. 그래서 실제로 필요한 통신만 하나씩 정리해서 열어 두는 방식으로 구성했습니다.
 
@@ -189,7 +193,7 @@ allowedIpList.forEach(ip -> {
 
 ECS 서비스들을 구현한 **EcsClusterStack**를 보면 각 애플리케이션의 런타임이 어떤 네트워크 구성을 가져가는지 확인할 수 있습니다.
 
-```
+```java
 SubnetSelection privateSubnets = SubnetSelection.builder()
         .subnetType(SubnetType.PRIVATE_WITH_EGRESS)
         .build();
@@ -205,7 +209,7 @@ PrivateDnsNamespace serviceNs = PrivateDnsNamespace.Builder.create(this, DOMAIN_
 -   **인터넷 직접 접근 차단**: ECS 태스크는 퍼블릭 IP 없이 동작하므로 인터넷에서 직접 접근할 수 없습니다.
 -   **서비스 디스커버리**: 내부 서비스끼리는 고정 IP 대신 서비스 이름으로 서로를 찾을 수 있습니다.
 
-```
+```java
 FargateService.Builder serviceBuilder = FargateService.Builder.create(this, SERVICE_ID)
         .cluster(props.cluster())
         .taskDefinition(taskDefinition)
@@ -228,7 +232,7 @@ FargateService.Builder serviceBuilder = FargateService.Builder.create(this, SERV
 
 이 구성에서 RDS(PostgreSQL)는 철저하게 프라이빗으로 두었습니다.
 
-```
+```java
 // RDS 인스턴스 생성
 this.rds = DatabaseInstance.Builder.create(this, "HolliversePostgres")
         .engine(postgresEngine)
@@ -248,7 +252,7 @@ this.rds = DatabaseInstance.Builder.create(this, "HolliversePostgres")
 
 AWS MSK를 사용하는 Kafka 계층도 동일한 방식을 적용했습니다.
 
-```
+```java
 this.cluster = new CfnCluster(this, "ProvisionedCluster",
         CfnClusterProps.builder()
                 .brokerNodeGroupInfo(CfnCluster.BrokerNodeGroupInfoProperty.builder()
@@ -288,7 +292,3 @@ MSK 브로커 역시 private subnet에 배치했고, 인증은 IAM 기반 SASL, 
 one-year-gap has 10 repositories available. Follow their code on GitHub.
 
 github.com](https://github.com/one-year-gap)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 29 }
-
-공유하기

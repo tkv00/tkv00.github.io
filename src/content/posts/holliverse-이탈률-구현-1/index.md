@@ -1,8 +1,12 @@
 ---
-title: "[Holliverse] 이탈률 구현 (1)"
-date: 2026-03-31
+title: "[Holliverse] 이탈률 구현 (1) - Test Scenario 작성"
+date: 2026-04-01
+project: Holliverse
+tags: ["test", "K6", "성능 테스트", "부하 테스트"]
 legacyUrl: "https://codekim3570.tistory.com/38"
----## **1\. 개요**
+---
+
+## **1\. 개요**
 
 **Holliverse**의 이탈률의 정의와 오케스트레이션 계산 엔진 설계는 아래의 포스팅에서 확인할 수 있다.
 
@@ -39,7 +43,7 @@ codekim3570.tistory.com](https://codekim3570.tistory.com/entry/Holliverse-%EC%9D
 
 처음에는 admin 내부 **webhook**만 직접 호출하는 방식도 충분해 보였다. 실제로 admin write path만 빠르게 검증하려면 그 방식이 더 단순하고 속도도 빠르다. 하지만, 이 방식은 실제 운영 경로에서 중요한 문제를 설명하지 못한다고 판단했다.
 
-![](https://blog.kakaocdn.net/dna/nad5U/dJMcadamvMY/AAAAAAAAAAAAAAAAAAAAAArhpq83F-I33lrtrlH7c79_YqRJ8IhnujXj8MCGkCHZ/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=ySOz%2FDPwWS0S0cse%2BEq%2BENcTdSQ%3D)
+![](./01-option-subscriptions-flow-2026-03-31-170121.png)
 
 Admin Webhook 테스트로만은 아래와 같은 질문에 대해서 검증할 수 없다.
 
@@ -51,7 +55,7 @@ Admin Webhook 테스트로만은 아래와 같은 질문에 대해서 검증할 
 
 아래와 같은 경로의 흐름을 검증하고자 하였다.
 
-![](https://blog.kakaocdn.net/dna/baIJYq/dJMcagdVEal/AAAAAAAAAAAAAAAAAAAAAD_cEPxOxmVfyeBWQqFOjOvsf64GxdLcj_Kt8RHDdXFU/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=BPoLycSAWfxUETwSt2dXmdaCdrI%3D)
+![](./02-option-subscriptions-flow-2026-03-31-170510.png)
 
 * * *
 
@@ -73,21 +77,11 @@ Admin Webhook 테스트로만은 아래와 같은 질문에 대해서 검증할 
 
 비교 항목 K6를 선택한 이유
 
-시나리오 표현력
-
-JavaScript 기반이라 cohort, duplicate, token 순환 같은 로직을 코드 명확히 표현
-
-재현성
-
-GUI 기반 설정이 아니라 코드로 남으므로 Git diff와 리뷰가 쉽다
-
-유지보수성
-
-시나리오 수정이 선언형/스크립트 형태로 명확하다
-
-결과 처리
-
-summary JSON, 로그 출력, custom metric 후처리가 쉽다
+| 시나리오 표현력 | JavaScript 기반이라 cohort, duplicate, token 순환 같은 로직을 코드 명확히 표현 |
+| --- | --- |
+| 재현성 | GUI 기반 설정이 아니라 코드로 남으므로 Git diff와 리뷰가 쉽다 |
+| 유지보수성 | 시나리오 수정이 선언형/스크립트 형태로 명확하다 |
+| 결과 처리 | summary JSON, 로그 출력, custom metric 후처리가 쉽다 |
 
 * * *
 
@@ -105,110 +99,36 @@ LG유플러스 공식 웹 서비스는 월 약 1,100만 방문자가 발생하�
 
 DAU 3만명에 대해서 현재 진행하고자 하는 로그 테스트의 가정치는 아래와 같이 잡았다.
 
-**항목**
+| 항목 | 값 |
+| --- | --- |
+| DAU | 30,000 |
+| churn 대상 로그 평균 | 1.5건/일 |
+| 일일 churn 대상 로그 총량 | 45,000건 |
+| 피크 집중 구간 | 15분 |
+| 피크 집중 비율 | 25% |
 
-**값**
-
-DAU
-
-30,000
-
-churn 대상 로그 평균
-
-1.5건/일
-
-일일 churn 대상 로그 총량
-
-45,000건
-
-피크 집중 구간
-
-15분
-
-피크 집중 비율
-
-25%
-
-```
+```text
 45,000 × 25% = 11,250
 11,250 / 900초 ≈ 12.5 RPS
 ```
 
 구성한 전체적인 **5개의 시나리오**와 검증하고자 하는 내용은 아래와 같다.
 
-**시나리오**
-
-**부하**
-
-**시간**
-
-**목적**
-
-Baseline
-
-15 RPS
-
-30분
-
-실제 피크 근처에서 기본 파이프라인 정합성 확인
-
-Peak
-
-50 RPS
-
-15분
-
-여유 버퍼 포함 피크 부하에서 누적 count와 score 재계산 검증
-
-Burst
-
-최대 200 RPS
-
-3분
-
-짧은 시간 집중 부하에서 지연, 유실, 비동기 backlog 탐지
-
-Retry Storm
-
-50 RPS
-
-15분
-
-같은 logical event 재전송 시 중복 반영 방지 검증
-
-Hot Member
-
-100 VU
-
-5분
-
-동일 회원 동시 요청에서 lost update 유무 검증
+| 시나리오 | 부하 | 시간 | 목적 |
+| --- | --- | --- | --- |
+| Baseline | 15 RPS | 30분 | 실제 피크 근처에서 기본 파이프라인 정합성 확인 |
+| Peak | 50 RPS | 15분 | 여유 버퍼 포함 피크 부하에서 누적 count와 score 재계산 검증 |
+| Burst | 최대 200 RPS | 3분 | 짧은 시간 집중 부하에서 지연, 유실, 비동기 backlog 탐지 |
+| Retry Storm | 50 RPS | 15분 | 같은 logical event 재전송 시 중복 반영 방지 검증 |
+| Hot Member | 100 VU | 5분 | 동일 회원 동시 요청에서 lost update 유무 검증 |
 
 사용자 로그의 **분포도**는 아래와 같이 잡았다.
 
-**이벤트**
-
-**비율**
-
-**의미**
-
-click\_compare
-
-50%
-
-요금제 비교 행동
-
-click\_change
-
-30%
-
-요금제 변경 시도 행동
-
-click\_penalty
-
-20%
-
-위약금 조회 행동
+| 이벤트 | 비율 | 의미 |
+| --- | --- | --- |
+| click_compare | 50% | 요금제 비교 행동 |
+| click_change | 30% | 요금제 변경 시도 행동 |
+| click_penalty | 20% | 위약금 조회 행동 |
 
 * * *
 
@@ -225,33 +145,14 @@ click\_penalty
 
 **입력 조건**
 
-**항목**
-
-**값**
-
-부하
-
-15 RPS
-
-시간
-
-30분
-
-token pool
-
-30,000명
-
-요청 구조
-
-1요청 = 1로그
-
-duplicate
-
-없음
-
-예상 요청 수
-
-27,000건
+| 항목 | 값 |
+| --- | --- |
+| 부하 | 15 RPS |
+| 시간 | 30분 |
+| token pool | 30,000명 |
+| 요청 구조 | 1요청 = 1로그 |
+| duplicate | 없음 |
+| 예상 요청 수 | 27,000건 |
 
 * * *
 
@@ -265,33 +166,14 @@ duplicate
 
 **입력 조건**
 
-**항목**
-
-**값**
-
-active cohort
-
-10,000명
-
-부하
-
-50 RPS
-
-시간
-
-15분
-
-예상 요청 수
-
-45,000건
-
-인당 평균 요청 수
-
-4.5건
-
-duplicate
-
-없음
+| 항목 | 값 |
+| --- | --- |
+| active cohort | 10,000명 |
+| 부하 | 50 RPS |
+| 시간 | 15분 |
+| 예상 요청 수 | 45,000건 |
+| 인당 평균 요청 수 | 4.5건 |
+| duplicate | 없음 |
 
 * * *
 
@@ -305,29 +187,13 @@ duplicate
 
 **입력 조건**
 
-항목
-
-값
-
-active cohort
-
-5,000명
-
-시간
-
-3분
-
-부하 패턴
-
-50 -> 200 RPS 1분, 200 RPS 유지 1분, 200 -> 50 RPS 1분
-
-계획 요청 수
-
-27,000건
-
-인당 평균 요청 수
-
-5.4건
+| 항목 | 값 |
+| --- | --- |
+| active cohort | 5,000명 |
+| 시간 | 3분 |
+| 부하 패턴 | 50 -> 200 RPS 1분, 200 RPS 유지 1분, 200 -> 50 RPS 1분 |
+| 계획 요청 수 | 27,000건 |
+| 인당 평균 요청 수 | 5.4건 |
 
 * * *
 
@@ -337,41 +203,16 @@ active cohort
 
 **입력 조건**
 
-**입력**
-
-**조건**
-
-부하
-
-50 RPS
-
-시간
-
-15분
-
-대상 회원 풀
-
-5,000명
-
-예상 총 요청 수
-
-45,000건
-
-duplicate group size
-
-5
-
-duplicates per group
-
-1
-
-예상 고유 이벤트 수
-
-36,000건
-
-예상 duplicate 수
-
-9,000건
+| 입력 | 조건 |
+| --- | --- |
+| 부하 | 50 RPS |
+| 시간 | 15분 |
+| 대상 회원 풀 | 5,000명 |
+| 예상 총 요청 수 | 45,000건 |
+| duplicate group size | 5 |
+| duplicates per group | 1 |
+| 예상 고유 이벤트 수 | 36,000건 |
+| 예상 duplicate 수 | 9,000건 |
 
 * * *
 
@@ -390,32 +231,12 @@ duplicates per group
 
 **입력 조건**
 
-**항목**
-
-**값**
-
-hotspot member 수
-
-10명
-
-동시성
-
-100 VU
-
-시간
-
-5분
-
-요청 특성
-
-같은 10명에게 반복적으로 요청 집중
-
-핵심 목적
-
-same-member lost update 검증
+| 항목 | 값 |
+| --- | --- |
+| hotspot member 수 | 10명 |
+| 동시성 | 100 VU |
+| 시간 | 5분 |
+| 요청 특성 | 같은 10명에게 반복적으로 요청 집중 |
+| 핵심 목적 | same-member lost update 검증 |
 
 다음 포스팅에서는 **Baseline Test**와 **Peak Test**를 진행 과정과 결과에 대해서 포스팅하겠다.
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 38 }
-
-공유하기

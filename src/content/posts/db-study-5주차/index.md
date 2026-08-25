@@ -1,8 +1,12 @@
 ---
-title: "[DB-STUDY] 5주차"
+title: "[DB-STUDY] 5주차 - 인덱스 튜닝"
 date: 2026-01-01
+category: 데이터베이스
+tags: ["데이터베이스", "Oracle", "mysql", "database", "CS", "db", "데이터 베이스"]
 legacyUrl: "https://codekim3570.tistory.com/23"
----Ureca 3기 - 백엔드 대면 교육을 들으며 따로 진행한 약 8주간의 데이터베이스 스터디 내용입니다.
+---
+
+Ureca 3기 - 백엔드 대면 교육을 들으며 따로 진행한 약 8주간의 데이터베이스 스터디 내용입니다.
 
 [GitHub - Study-Castle/Database\_Study
 
@@ -22,7 +26,7 @@ github.com](https://github.com/Study-Castle/Database_Study)
 
 #### **ROWID : 디스크 상 존재하는 데이터 레코드를 찾아가기 위한 위치 논리적 주소**
 
-![](https://blog.kakaocdn.net/dna/baAbbf/dJMcacIxJJj/AAAAAAAAAAAAAAAAAAAAAMaeAHPurIKKy5T_f4zGQbEGv0lu_vXynWZFtmxRClfH/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=pIzLST67kE2FlfGzalkoNQO%2B1y4%3D)
+![](./01-ㅋㅌㅊㅂㅈㄷㅂㅈ.png)
 
 #### **ROWID를 이용하여 Table 읽는 과정**
 
@@ -33,7 +37,7 @@ github.com](https://github.com/Study-Castle/Database_Study)
     1.  ex) 1 → 11,21,31,41… 2 → 2,12,22,32,… 3 → 3,13,23,33…
 3.  나머지 과정 순서도로 표현
 
-![](https://blog.kakaocdn.net/dna/bqu82c/dJMcaaqpuCF/AAAAAAAAAAAAAAAAAAAAAIDbavTiCNClw9c9zhr8Ki8LDmTsajgLL_1iRAdNazuJ/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=TCYf0iZpEoKGAs3dAIgJgm10qE0%3D)
+![](./02-ㅊㅋㅌㅊㅂㅈㄱㅂ.png)
 
 위의 과정 이후 블록 읽기가 끝나면 버퍼 Lock 해제 → 다시 **Hash Chain Latch** 획득 시도 → **경합 발생🚨**
 
@@ -47,13 +51,13 @@ github.com](https://github.com/Study-Castle/Database_Study)
 
 ***실행 계획에서 아래와 같은 문구 발견 시 위와 같은 수 많은 과정과 부하 발생 인지 → 제대로 된 인덱싱 필요***
 
-```
+```text
 Table Access By Index ROWID
 ```
 
 ### 2) 인덱스 클러스터링 팩터
 
-![](https://blog.kakaocdn.net/dna/LEXzf/dJMcaiBVD3r/AAAAAAAAAAAAAAAAAAAAAFXBOrXFZlfxrveU3eqzMqOX-LSmmaINGyWTQBBSCcDf/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=9T14vAmrEE5xqgSqvuQLB2twfsw%3D)
+![](./03-ㅇㅌㅍㅋㅌ츅ㄷㅎ.png)
 
 -   **클러스터링 팩터** : 군집성 계수. 특정 컬럼을 기준으로 같은 값을 갖는 데이터가 서로 모여있는 정도.
 -   왼쪽 → 클러스터링 팩터가 좋다
@@ -71,24 +75,17 @@ Table Access By Index ROWID
 
 **온라인 프로그램 튜닝 VS 배치 프로그램 튜닝**
 
-**온라인 프로그램** 
-
-**배치 프로그램**
-
-NL 조인(인덱스 활용 조인)
-
-Full Scan 또는 해시 조인
-
- 
-
-파티션 활용+병렬 처리
+| 온라인 프로그램 | 배치 프로그램 |
+| --- | --- |
+| NL 조인(인덱스 활용 조인) | Full Scan 또는 해시 조인 |
+|  | 파티션 활용+병렬 처리 |
 
 ### 3) 인덱스 컬럼 추가
 
 -   운영 환경에서 인덱스 구성을 변경하는 것은 쉽지 않음.
 -   새로운 인덱스의 생성 → 인덱스가 많아지는 경우 인덱스 관리 비용 증가 / DML 부하에 따른 트랜잭션 성능 저하
 
-```
+```java
 index(dep_no , job) 구성
 
 SELECT *
@@ -170,7 +167,7 @@ index(dep_no, job, sal)
 -   클러스터 인덱스의 키는 UNIQUE
 -   구성 방법
 
-```
+```sql
 1. create cluster c_dept# (deptno number(2)) index;
  -> 클러스터 생성
  
@@ -188,12 +185,12 @@ index(dep_no, job, sal)
 
 #### ***해시 클러스터 테이블***
 
-![](https://blog.kakaocdn.net/dna/uP5bp/dJMcahJQuv5/AAAAAAAAAAAAAAAAAAAAAEAvcqMT7Px0k6WrF4HlPwjNIjmlvEFFbgDo6_4fhCGh/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=nRMAOeYv7o9vJSPp6sIextnD7wk%3D)
+![](./04-zxcv.png)
 
 -   인덱스를 사용하지 않고 해시 알고리즘을 사용해 클러스터를 찾아감.
 -   구성 방법
 
-```
+```sql
 1. create cluster c_dept# (deptno number(2) ) hashkeys 4;
  -> 클러스터 생성
  
@@ -211,7 +208,7 @@ index(dep_no, job, sal)
 -   인덱스 선행 컬럼이 조건절에 없거나 ‘=’ 조건이 아니면 인덱스 스캔 비효율적.
 -   선행 컬럼이 조건절에 있는 경우
 
-```
+```sql
 where 
 	c1 = '성'
 	and
@@ -224,7 +221,7 @@ where
 
 -   선행 컬럼이 조건절에 없는 경우
 
-```
+```sql
 where
 	c1 = '성'
 	and
@@ -241,7 +238,7 @@ where
     -   인덱스 스캔 범위를 결정하는 조건.
     -   인덱스 수직적 탐색을 통해 스캔 시작점 결정 영향 → 인덱스 리프 블록 스캔 시 종료 지점 결정 영향
 
-```
+```sql
 where 
 	c1 = '성'
 	and
@@ -263,7 +260,7 @@ where
 -   인덱스 필터 조건
     -   테이블로 액세스할지 결정하는 조건절.
 
-```
+```text
 테이블 액세스 비용 
 		= 인덱스 수직적 탐색 비용 + 인덱스 수평적 탐색 비용 + 테이블 랜덤 액세스 비용
 		= 인덱스 루트와 브랜치 레벨에서 읽는 블록 수 +
@@ -276,7 +273,7 @@ where
 -   인덱스에는 같은 값을 갖는 레코드들이 서로 모여있음.
 -   조건 누락 OR ‘=’ 조건이 아닌 **연산자**로 조회 ⇒ 조건절 만족하는 레코드 서로 흩어진 상태로 변경됨.
 
-```
+```sql
 [ 조건절 1 ]
 
 where 
@@ -295,9 +292,9 @@ where
 |----------------|--------------|
 ```
 
-![](https://blog.kakaocdn.net/dna/ca750L/dJMcahpx4NX/AAAAAAAAAAAAAAAAAAAAAPjFT82q3mLaM0cFYMCZtmrkOS28jVyosTvPak8Yg_J5/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=BpSRIfWyqXCACIQ%2FxQMPqbIjTFc%3D)
+![](./05-zxczxcxzc.jpg)
 
-```
+```sql
 [ 조건절 2 ]
 
 where 
@@ -316,9 +313,9 @@ where
 |----------------|--------------|
 ```
 
-![](https://blog.kakaocdn.net/dna/y2tj8/dJMcabiyFHT/AAAAAAAAAAAAAAAAAAAAAO94Pux_xyQyGkNWp9Ziu0dpB4hzKdJ2nHN__9Ot-waA/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=ylip0KN%2FRVll5eGqj%2Fbw7a63DyQ%3D)
+![](./06-zxczxb.jpg)
 
-```
+```sql
 [ 조건절 3 ]
 
 where 
@@ -337,9 +334,9 @@ where
 |----------------|--------------|
 ```
 
-![](https://blog.kakaocdn.net/dna/Sfkxx/dJMcajgxnmn/AAAAAAAAAAAAAAAAAAAAAIi-ys14o9ou2aeJWF2f4MB4eCkcwTDiBefdHTKRpZse/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=zFzgngWBtkIr7QQvIXnkbbVm8IE%3D)
+![](./07-xcvxcv.jpg)
 
-```
+```sql
 [ 조건절 4 ]
 
 where 
@@ -358,12 +355,12 @@ where
 |----------------|--------------|
 ```
 
-![](https://blog.kakaocdn.net/dna/bQ4F0j/dJMcai9LylZ/AAAAAAAAAAAAAAAAAAAAANb9qDyu8z1aUu4SKryLSEvxnWTAw0PUxIutkgT_nOwF/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=pQsSVUmxtpso4BJbjKeF82Ffo1w%3D)
+![](./08-cv-cx.jpg)
 
 -   선행 컬럼이 모두 = 조건인 상태 ⇒ 첫 번째 나타나는 범위검색 조건까지만 만족하는 인덱스 레코드 모두 연속해서 모여있음.
 -   그 이하 조건까지 만족하는 레코드는 비교 연산자 종류 상관없이 흩어짐.
 
-```
+```sql
 [ 조건절 5 ]
 
 where 
@@ -387,7 +384,7 @@ where
 -   인덱스 선행 컬럼이 조건절에 없거나 부등호, BETWEEN, LIKE 같은 범위검색 조건 ⇒ 인덱스 스캔 비효율
 -   Ex) create\_idx(**아파트 시세 코드 + 평형 + 평형 타입 + 인터넷 매물**)
 
-```
+```sql
 SELECT 
 		해당층, 평단가, 입력일, 해당동, 매물구분, 연사용일수, 중개업코드
 FROM
@@ -404,12 +401,12 @@ ORDER BY
 		입력일 DESC
 ```
 
-![](https://blog.kakaocdn.net/dna/bP0N3v/dJMcah38xt1/AAAAAAAAAAAAAAAAAAAAAMIMF3puN_wzVXyIEoG3yisUqMSSmiKqSdzL-g5ZVeQ3/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=NZJCRKHHbNwYmEYsASkM7F%2FHWbk%3D)
+![](./09-xvcxv.jpg)
 
 -   인덱스 선두 컬럼에 BETWEEN 연산자 사용하는 경우
 -   Ex) create\_idx( **인터넷 매물**+**아파트 시세 코드 + 평형 + 평형 타입**)
 
-```
+```sql
 SELECT 
 		해당층, 평단가, 입력일, 해당동, 매물구분, 연사용일수, 중개업코드
 FROM
@@ -428,7 +425,7 @@ ORDER BY
 
 -   ***아파트 시세 코드 = 'A010213123' + 평형 = '90' + 평형타입 = 'A'* 를 만족하는 레코드들이 흩어지게 됨. ⇒ 스캔하지 않아도 되는 레코드들도 스캔.**
 
-![](https://blog.kakaocdn.net/dna/cd2mXk/dJMcaaqpvyH/AAAAAAAAAAAAAAAAAAAAAGIXptNN68m2hatZYuNXR-27nmZ9atEqwDS8okkHxDt4/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=2usG%2F3o9UYFk8NizjJfnti2Q%2FI8%3D)
+![](./10-xvzsz.jpg)
 
 ### 5) BETWEEN => IN-LIST로 전환
 
@@ -436,7 +433,7 @@ ORDER BY
 
 **⇒ *BETWEEN를 IN-LIST 형식으로 변환하자!!***
 
-```
+```sql
 SELECT 
 		해당층, 평단가, 입력일, 해당동, 매물구분, 연사용일수, 중개업코드
 FROM
@@ -455,7 +452,7 @@ ORDER BY
 
 -   **위의 쿼리문의 3번의 인덱스 탐색과 동일한 쿼리문**
 
-```
+```sql
 SELECT 
 		해당층, 평단가, 입력일, 해당동, 매물구분, 연사용 일수, 중개업 코드
 FROM
@@ -545,7 +542,7 @@ AND
 
 ### 7) IN 조건은 '='인가
 
-```
+```sql
 SELECT 
 		*
 FROM
@@ -565,7 +562,7 @@ AND
 
 > **결론! BETWEEN를 사용하자.**
 
-```
+```sql
 [ 조건절 1 ]
 WHERE 판매월 BETWEEN '201901' AND'201912'
 AND   판매구분 = 'B'
@@ -577,14 +574,14 @@ AND   판매구분 = 'B'
 
 #### **CASE 1**
 
-![](https://blog.kakaocdn.net/dna/bNU4pf/dJMcahJQuOh/AAAAAAAAAAAAAAAAAAAAAKb0NoQgjqAGYKsKqGSQEsJcS-yDtL-lIlIgdX0sBtFJ/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=eUUH9HgLSgB%2FG7kLwa1O%2F0SVs2E%3D)
+![](./11-xzvbwq.png)
 
 -   A : 90%
 -   B : 10%
     -   \[ 조건절1 \] :판매월 = 201901 & 판매구분 = ‘B’에서 스캔 시작
     -   \[ 조건절2 \] : 판매월 = 201901 & 판매구분 =’A’에서 스캔 시작 ← 판매월이 20190이 존재할 수 있기 때문에 판매구분 B로 바로 갈 수 없음.
 
-```
+```sql
 [ 조건절 1 ]
 WHERE 판매월 BETWEEN '201901' AND'201912'
 AND   판매구분 = 'A'
@@ -596,13 +593,9 @@ AND   판매구분 = 'A'
 
 #### **CASE 2**
 
-![](https://blog.kakaocdn.net/dna/Hin4C/dJMcahiLEF2/AAAAAAAAAAAAAAAAAAAAANSEGtbyu7Ooob1vfJ6wzwu85wLDOH_Gg07g2sBpYnXn/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=8cqmCCjYQfpahjnVepboUvke8kM%3D)
+![](./12-cbbvc.png)
 
 -   A : 10%
 -   B : 90%
     -   \[ 조건절1 \] : 판매월 = 201912 & 판매구분 = A에서 스캔 중지
     -   \[ 조건절 2 \] : 판매월 = 201912 모두를 스캔 ← 201913이 저장되어 있을 수도 있기 때문에 전체를 스캔.
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 23 }
-
-공유하기

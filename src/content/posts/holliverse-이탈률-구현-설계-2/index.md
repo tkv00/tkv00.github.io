@@ -1,8 +1,12 @@
 ---
-title: "[Holliverse] 이탈률 구현 설계 (2)"
-date: 2026-03-27
+title: "[Holliverse] 이탈률 구현 설계 (2) - 오케스트레이션 구축"
+date: 2026-03-28
+project: Holliverse
+tags: ["crm", "설계", "이탈률", "오케스트레이션"]
 legacyUrl: "https://codekim3570.tistory.com/34"
----## **1\. 개요**
+---
+
+## **1\. 개요**
 
 해당 글에서는 이전 글에서 정리한 이탈률 생명주기를 바탕으로, 각 이벤트가 어떤 방식으로 이탈률 계산에 반영되는지, 그리고 이탈률 임계치에 도달한 이유를 기록하기 위해 어떤 파이프라인을 구축했는지를 설명하고자 한다. 이번 글에서는 그중에서도 실제 구축 과정에서 팀원들과 함께 고민했던 지점들, 그리고 그 문제를 어떤 방식으로 해결해 나갔는지를 중심으로 기록하려 한다.
 
@@ -70,7 +74,7 @@ CDC는 데이터 변경을 기반으로 분석을 시작하기 때문에, 원본
 
 결론적으로 상담 데이터는 아래와 같은 플로우로 진행된다.
 
-![](https://blog.kakaocdn.net/dna/qThmz/dJMcajhjHCD/AAAAAAAAAAAAAAAAAAAAAB3DJ00zGWK0XtwIure5FlVSr2TFMCMwlLoY84aZZguh/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=RICBAVImXiYVASSOgOPwWDdNds8%3D)
+![](./01-counsel-churn-flow-drawio-1.png)
 
 * * *
 
@@ -108,7 +112,7 @@ Admin Server의 본래 역할은 로그 수집 서비스가 아니라, 전달받
 
 물론 어떤 로그를 이탈 관련 이벤트로 볼 것인지에 대한 규칙이 **Customer Server**에 들어가기 때문에 관리 포인트가 늘어날 수 있다는 점은 단점이었다. 하지만 현재 이탈률에 반영하기로 한 로그 종류가 명확했고, 전체 로그를 모두 넘긴 뒤 **Admin Server**에서 다시 해석하는 구조보다 훨씬 단순하다고 판단했다.
 
-![](https://blog.kakaocdn.net/dna/2iCEI/dJMcajayjIC/AAAAAAAAAAAAAAAAAAAAAH8nkdiJn4tjDxz32zuSEvRt3Y8oiMD4d7BoR3CjdcZx/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=iZQfATyzemSaKbTZ%2BKt7B5CMm3I%3D)
+![](./02-churn-flowchart-drawio-1.png)
 
 * * *
 
@@ -120,9 +124,9 @@ Admin Server의 본래 역할은 로그 수집 서비스가 아니라, 전달받
 
 **계약 기반 정보**에서는 약정 상태와 계약 잔여 기간처럼 서비스 유지 여부에 영향을 주는 값을 중요하게 봤다. **사용량 기반 정보**에서는 현재 요금제와 실제 사용량이 얼마나 맞는지, 그리고 사용량 변화가 어떤 신호를 주는지를 중심으로 판단했다. 또한 데이터의 특성에 맞게 반영 방식도 구분했다. 상담 데이터와 행동 로그는 이벤트 기반으로 처리하고, 계약 정보와 사용량 정보는 주기적 배치로 반영하는 방식이 더 안정적이었다. 결국 기본 정보 반영의 핵심은 데이터의 양이 아니라, 이탈 가능성을 설명할 수 있는 의미 있는 값만 선택하는 데 있었다.
 
-![](https://blog.kakaocdn.net/dna/bbPMEQ/dJMcaadFsUg/AAAAAAAAAAAAAAAAAAAAAHLWB2fdT-XrJb55uLs6mYtzSALUsu0UmluuARkdYx4E/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=5Wt7zjLN4o00FOxsgdykPXeNbvs%3D)
+![](./03-스크린샷-2026-03-24-00-39-39.png)
 
-![](https://blog.kakaocdn.net/dna/bgRZeV/dJMcac3z6oT/AAAAAAAAAAAAAAAAAAAAABTA973_XtTKJhYKBgncHjVocTjAG7-Mi43p5A0vC1SY/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=mNoS7lF6gAa%2BJ9EaGbXFnXGPMho%3D)
+![](./04-스크린샷-2026-03-24-00-39-58.png)
 
 * * *
 
@@ -136,7 +140,7 @@ Admin Server의 본래 역할은 로그 수집 서비스가 아니라, 전달받
 이 두 가지를 만족시키기 위해 우리는 ****입력 채널별 처리****와 ****최종 이탈률 집계****를 분리한 오케스트레이션 구조를 설계했다.  
 상담, 로그, 배치 데이터는 모두 서로 다른 형태로 들어오지만, 최종적으로는 feature -> feature snapshot -> churn snapshot이라는 동일한 흐름으로 수렴하도록 만들었다.
 
-![](https://blog.kakaocdn.net/dna/k5luF/dJMcacvNrLU/AAAAAAAAAAAAAAAAAAAAAB7DJWEYeSibKAlFX6CcpYPzHwlOtJdOUr3cQ_TjxrtG/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=fFeXgOswOGv%2BTm2123Xbwk7svM0%3D)
+![](./05-churn-score-pipeline-drawio-1.png)
 
 입력 이벤트가 최종 이탈률을 덮여쓰지 않는다. 각 입력 파이프라인은 먼저 자신이 담당하는 Feature만을 계산하고, **feature\_snapshot\_store**를 갱신한다. 그 다음 공통 오케스트레이션 계층이 최신 Feature 점수를 다시 읽어 최종 이탈률과 위험 사유를 저장한다.
 
@@ -144,7 +148,7 @@ Admin Server의 본래 역할은 로그 수집 서비스가 아니라, 전달받
 
 가장 중요한 확장 포인트는 **ChurnFeatureType**, **ChurnFeatureScorer**, **ChurnFeatureScorerFactory**였다. 새로운 Feature가 추가되면 새로운 feature 모델과 scorer를 추가하고, 입력 계층에서 해당 feature snapshot만 동기화하면 된다. 공통 계산 정책인 **ChurnScorePolicy**는 **ChurnFeatureSet**에 담긴 feature들을 순회하면서 scorer를 찾아 점수를 계산하므로, 계산 흐름 자체는 바뀌지 않는다.
 
-![](https://blog.kakaocdn.net/dna/bqT1Zx/dJMcagkCzmX/AAAAAAAAAAAAAAAAAAAAALvt65nO2wr2MMSOrVZ61Gw8YCuGbKbI3Ma8rrfdTSan/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=viXCXlpMeIeRKdbesv63C0XNbFw%3D)
+![](./06-sadasdasd.png)
 
 이 방식의 장점은 새 Feature가 들어와도 controller, use case, policy, 저장 계층을 전부 수정하는 것이 아니라, 주로 아래와 같은 고정된 지점만 건드리면 된다는 점이다.
 
@@ -165,7 +169,7 @@ Admin Server의 본래 역할은 로그 수집 서비스가 아니라, 전달받
 
 해당 값들은 Default를 지정해주고 AWS Secret Manager로 관리했다.
 
-```
+```yaml
 app:
   churn:
     # 최종 이탈 점수 구간별 위험도 기준.
@@ -274,7 +278,7 @@ app:
 
 위의 설정들은 **ChurnScoringProperties.java**로 바인딩되고, 실제 계산은 각 **scorer**가 담당하게 된다. 예를 들어 사용자 로그 Feature를 계산하는 **MemberActionFeatureScorer.java**는 아래와 같이 동작한다.
 
-```
+```java
 @Override
 public List<ChurnFeatureContribution> contribute(ChurnFeature feature) {
     MemberActionFeature memberActionFeature = (MemberActionFeature) feature;
@@ -295,7 +299,7 @@ public List<ChurnFeatureContribution> contribute(ChurnFeature feature) {
 
 실제 가중치 값은 설정파일에서 읽고, 그 규칙을 통해 **ChurnFeatureContribution**으로 바꾸어 준다.
 
-```
+```java
 /**
  * 최종 점수 기준 등급 판정 정책.
  */
@@ -332,7 +336,7 @@ public class ChurnRiskGradePolicy {
 
 해당 계산 로직의 포인트는 **각 입력 채널들이 최종 이탈률을 계산하지 않는다**는 점이다. 모든 입력은 각자 담당하는 Feature를 계산하고 저장한 뒤, 공통 오케스트레이션 엔진이 최신 Feature 점수들을 다시 읽어 최종 이탈률을 갱신한다.
 
-![](https://blog.kakaocdn.net/dna/wMjaj/dJMb99Tla9l/AAAAAAAAAAAAAAAAAAAAAOlqHIui_qkwG2JzvC1rhfmQKbyzTO9NyTKKFGoUETiH/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=xAPoBm6rPRThXuZChmKuzb1HcMQ%3D)
+![](./07-ㄴㅇㄹㄴㅇ.png)
 
 오케스트레이션 동작 다이어그램
 
@@ -340,13 +344,13 @@ public class ChurnRiskGradePolicy {
 
 #### 3-1. 상담데이터가 들어오는 방식
 
-![](https://blog.kakaocdn.net/dna/CqZ0N/dJMcafst80Z/AAAAAAAAAAAAAAAAAAAAANf2ulceeidVm2bDMp0qZonWIkyYf4RuFQ73aXqFIKEq/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=pXX4cECnv4%2FDROCqXUc7sYFcXZ8%3D)
+![](./08-option-subscriptions-flow-2026-03-27-144021.png)
 
 상담데이터 입력 시퀀스 다이어그램
 
 **Intelligence Server**로부터 분석된 상담 데이터를 아래와 같은 Json 형식으로 받아온다.
 
-```
+```http
 POST /internal/v1/analysis-consultation
 {
   "dispatchRequestId": "dispatch-001",
@@ -374,7 +378,7 @@ POST /internal/v1/analysis-consultation
 
 **InternalAnalysisWebhookController.java**에서 해당 데이터를 받아온다.
 
-```
+```java
 @Profile("admin")
 @RequiredArgsConstructor
 @RestController
@@ -444,7 +448,7 @@ public class InternalAnalysisWebhookController {
 3.  상담 Feature 저장
 4.  공통 계산 서비스 호출
 
-```
+```java
 @Service
 @Profile("admin")
 @RequiredArgsConstructor
@@ -493,7 +497,7 @@ public class HandleAnalysisConsultationUseCase {
 
 이후에 **CalculateChurnScoreService.java**가 상담 Feature를 점수화한다.
 
-```
+```java
 @Service
 @Profile("admin")
 @RequiredArgsConstructor
@@ -577,11 +581,11 @@ public class CalculateChurnScoreService {
 
 #### 3-2. 로그 데이터가 들어오는 방식
 
-![](https://blog.kakaocdn.net/dna/niqvw/dJMcagdST5c/AAAAAAAAAAAAAAAAAAAAALZXD4IOdAYb-me4xVXf3ZM6wTiFBiZ4Fq06m-E2-zOx/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=tWyuHYkyt%2B0riWnR97STcx%2FtUss%3D)
+![](./09-option-subscriptions-flow-2026-03-27-151835.png)
 
 실시간 로그는 프론트엔드가 일정 시간 단위(5초)로 HTTP 방식으로 **Customer Server**로 전송된다. **UserLogService.java**는 전체로그를 Kafka로 전송하면서, churn과 관련 있는 로그들만 따로 **Admin Server**로 전송한다.
 
-```
+```java
 /**
 * Admin 이벤트 변환.
 */
@@ -616,7 +620,7 @@ private boolean isAdminTarget(UserLogEventName eventName) {
 
 **Admin Server**에서는 해당 로그들을 **HTTP 형식**으로 **InternalLogFeatureController.java**에서 받는다.
 
-```
+```java
 /**
  * 실시간 로그 기반 feature customer -> admin 전송 로직
  */
@@ -639,7 +643,7 @@ public class InternalLogFeatureController {
 
 실제 요청 Json 형식은 아래와 같다.
 
-```
+```http
 POST /internal/v1/log-features
 {
   "eventType": "click_compare",
@@ -650,7 +654,7 @@ POST /internal/v1/log-features
 
 받은 요청값을 **HandleLogFeatureUseCase.java**에서 내부 이벤트로 정규화한다.
 
-```
+```java
 @Service
 @RequiredArgsConstructor
 @Profile("admin")
@@ -696,7 +700,7 @@ public class HandleLogFeatureUseCase {
 
 그 다음 **CalculateLogChurnScoreService.java**가 해당 **로그** **Feature**를 계산한다.
 
-```
+```java
 package site.holliverse.admin.application.usecase;
 
 import lombok.RequiredArgsConstructor;
@@ -803,13 +807,13 @@ public class CalculateLogChurnScoreService {
 
 #### 3-3. 배치 데이터가 들어오는 방식
 
-![](https://blog.kakaocdn.net/dna/Ya38G/dJMcaflJFuS/AAAAAAAAAAAAAAAAAAAAAJ2t9N6xDqFgFfACNRKor8MbXyDEMREepdXy85ro4HLi/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=FtELjMtwJaaqcwjTkkGhvzjQwKM%3D)
+![](./10-option-subscriptions-flow-2026-03-27-151927.png)
 
 배치 데이터는 상담이나 로그처럼 즉시 들어오는 입력은 아니지만, 엔진에 합류하는 방식은 동일하다. 차이는 입력 시점이다. 상담과 로그는 이벤트 발생 시 들어오고, 배치는 일정 주기를 두고 계산하여 값을 적재한다.
 
 **ContractFeatureScorer.java**와 **UsageFeatureScorer.java**가 각각 계약/사용량 Feature를 계산할 수 있게 작성하였다.
 
-```
+```java
 /**
  * 계약 기반 feature 점수 계산.
  */
@@ -854,7 +858,7 @@ public class ContractFeatureScorer implements ChurnFeatureScorer {
 }
 ```
 
-```
+```java
 /**
  * 사용량 기반 feature 점수 계산.
  */
@@ -894,7 +898,7 @@ public class UsageFeatureScorer implements ChurnFeatureScorer {
 
 그리고 공통 엔진은 그 값을 **ChurnSnapshotStoreService.java**에서 다시 읽는다.
 
-```
+```java
 return new FeatureScores(
         toShortScore(latestScores.get(FeatureType.CONTRACT_FEATURE)),
         toShortScore(latestScores.get(FeatureType.USAGE_FEATURE)),
@@ -907,11 +911,11 @@ return new FeatureScores(
 
 #### 3-4. 3가지 입력이 실제로 만나는 지점
 
-![](https://blog.kakaocdn.net/dna/btEQlj/dJMcafTzLoZ/AAAAAAAAAAAAAAAAAAAAAOhBunmcT97k7KcLLQZoVo8WvldQo75oN-6AQKRejrXx/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=Pal6yJDMTURdJzefQWjvuNd6Roo%3D)
+![](./11-option-subscriptions-flow-2026-03-27-152013.png)
 
 세 입력이 실제로 하나로 만나는 곳은 **ChurnSnapshotStoreService.java**이다.
 
-```
+```java
 @Service
 @Profile("admin")
 @RequiredArgsConstructor
@@ -1041,7 +1045,3 @@ public class ChurnSnapshotStoreService {
 one-year-gap has 10 repositories available. Follow their code on GitHub.
 
 github.com](https://github.com/one-year-gap)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 34 }
-
-공유하기

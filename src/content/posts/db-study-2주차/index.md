@@ -1,8 +1,12 @@
 ---
-title: "[DB-STUDY] 2주차"
-date: 2025-12-20
+title: "[DB-STUDY] 2주차 - I/O 옵티마이저와 힌트"
+date: 2025-12-21
+category: 데이터베이스
+tags: ["데이터베이스", "mysql", "database", "CS", "db", "데이터 베이스"]
 legacyUrl: "https://codekim3570.tistory.com/19"
----**Ureca 3기 - 백엔드 대면 교육**을 들으며 따로 진행한 약 8주간의 데이터베이스 스터디 내용입니다.
+---
+
+**Ureca 3기 - 백엔드 대면 교육**을 들으며 따로 진행한 약 8주간의 데이터베이스 스터디 내용입니다.
 
 [https://github.com/Study-Castle/Database\_Study](https://github.com/Study-Castle/Database_Study)
 
@@ -30,23 +34,10 @@ github.com](https://github.com/Study-Castle/Database_Study)
 
 ### 발생 시점
 
- 
-
-랜덤
-
-순차
-
-상황
-
-특정 레코드나 데이터 블록을 찾기 위해 인덱스를 탐색하는 경우
-
-테이블의 모든 레코드를 스캔하는 SELECT 쿼리를 실행하는 경우
-
-예시
-
-WHERE 절에 조건을 포함한 쿼리, 임의의 데이터를 갱신 OR 삭제
-
-인덱스의 모든 블록을 읽거나 쓰는 경우, 대량의 데이터를 정렬하거나 그룹화하는 경우
+|  | 랜덤 | 순차 |
+| --- | --- | --- |
+| 상황 | 특정 레코드나 데이터 블록을 찾기 위해 인덱스를 탐색하는 경우 | 테이블의 모든 레코드를 스캔하는 SELECT 쿼리를 실행하는 경우 |
+| 예시 | WHERE 절에 조건을 포함한 쿼리, 임의의 데이터를 갱신 OR 삭제 | 인덱스의 모든 블록을 읽거나 쓰는 경우, 대량의 데이터를 정렬하거나 그룹화하는 경우 |
 
 * * *
 
@@ -82,7 +73,7 @@ WHERE 절에 조건을 포함한 쿼리, 임의의 데이터를 갱신 OR 삭제
 
 ### 풀 테이블 스캔
 
-![](https://blog.kakaocdn.net/dna/5e1r2/dJMcadtMFlC/AAAAAAAAAAAAAAAAAAAAAAdCsjF-M2w2kOoTIvU23K1XugpIAl3tHz3Fw9ZqgRju/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=AAbOxmCypzMGd224xzVU3GyPxY8%3D)
+![](./01-dv.png)
 
 풀 테이블 스캔
 
@@ -96,7 +87,7 @@ WHERE 절에 조건을 포함한 쿼리, 임의의 데이터를 갱신 OR 삭제
 
 ### 풀 인덱스 스캔
 
-![](https://blog.kakaocdn.net/dna/b7uiwX/dJMcaaRpu8B/AAAAAAAAAAAAAAAAAAAAAHbt5Bnb6kXDn9orboFmK_oNSAwpbogXz93dmN0gNao-/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=ETTbOU4%2FmwIZ2TxJPRGtAVC%2F30Y%3D)
+![](./02-ㅊ퓨.png)
 
 풀 인덱스 스캔
 
@@ -109,25 +100,12 @@ WHERE 절에 조건을 포함한 쿼리, 임의의 데이터를 갱신 OR 삭제
 
 -   정렬을 처리하는 방법
 
- 
+|  | 장점 | 단점 |
+| --- | --- | --- |
+| 인덱스 | 이미 인덱스가 정렬되어 있어 순서대로 읽기만 하면 되므로 매우 빠름 | 부가적인 인덱스 추가/삭제는 느리다, 디스크 공간이 많이 필요, 메모리가 많이 필요 |
+| FileSort | 인덱스를 생성하지 않는 방법으로 인덱스를 이용할 때의 단점이 장점 | 정렬 작업 시 실행 시 처리되므로 레코드의 수가 많을수록 성능 저하 |
 
-장점
-
-단점
-
-인덱스
-
-이미 인덱스가 정렬되어 있어 순서대로 읽기만 하면 되므로 매우 빠름
-
-부가적인 인덱스 추가/삭제는 느리다, 디스크 공간이 많이 필요, 메모리가 많이 필요
-
-FileSort
-
-인덱스를 생성하지 않는 방법으로 인덱스를 이용할 때의 단점이 장점
-
-정렬 작업 시 실행 시 처리되므로 레코드의 수가 많을수록 성능 저하
-
-```
+```sql
 EXPLAIN
 WITH filtered AS (
     SELECT
@@ -161,7 +139,7 @@ ORDER BY
 LIMIT 10;
 ```
 
-![](https://blog.kakaocdn.net/dna/b7mjgh/dJMb9952rtp/AAAAAAAAAAAAAAAAAAAAAMTv2TiTzSkBbpLKO7lc6KwMHiXa10WDQM4fY3zT-VXq/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=zLKQNPct8plu8grCFEKJmpPMWuA%3D)
+![](./03-ㅁㄴㅇㅌㅋ.png)
 
 * * *
 
@@ -212,7 +190,7 @@ LIMIT 10;
 2.  ORDER BY 순서대로 생성된 인덱스가 존재
 3.  WHERE절에 첫 번째로 읽는 테이블의 컬럼 조건 == ORDER BY 인덱스
 
-```
+```sql
 SELECT *
 FROM employees AS e, salaries AS s
 WHERE s.emp_no = e.emp_no
@@ -227,7 +205,7 @@ ORDER BY e.emp_no;
 -   드라이빙 테이블: 조인 시 먼저 액세스되는 테이블
 -   조인을 실행하기 이전에 조인 대상이 되는 첫 번째 테이블의 레코드를 우선 정렬 후 조인 실행
 
-```
+```sql
 SELECT *
 FROM employee AS e, salaries AS s
 WHERE s.emp_no = e.emp_no
@@ -245,17 +223,10 @@ ORDER BY e.last_name;
 
 ### 쿼리 처리 방법
 
-스트리밍
-
-버퍼링
-
-레코드가 검색될 때마다 바로 전송하는 방식
-
-먼저 결과를 모아 MySQL에서 가공 후 스토리지 엔진으로부터 가져옴
-
-GROUP BY / ORDER BY 쿼리에서는 불가능
-
-LIMIT를 사용해도 절감 효과 X
+| 스트리밍 | 버퍼링 |
+| --- | --- |
+| 레코드가 검색될 때마다 바로 전송하는 방식 | 먼저 결과를 모아 MySQL에서 가공 후 스토리지 엔진으로부터 가져옴 |
+| GROUP BY / ORDER BY 쿼리에서는 불가능 | LIMIT를 사용해도 절감 효과 X |
 
 * * *
 
@@ -288,11 +259,11 @@ LIMIT를 사용해도 절감 효과 X
     -   DISTINCT는 SELECT 레코드를 유니크하게 선택하는 것 (특정 컬럼만 아님)
     -   즉, `(first_name, last_name)` 조합이 유니크한 레코드를 조회
 
-```
+```sql
 SELECT DISTINCT first_name, last_name FROM employees;
 ```
 
-```
+```java
 SELECT DISTINCT(first_name), last_name FROM employees;
 ```
 
@@ -309,7 +280,7 @@ SELECT DISTINCT(first_name), last_name FROM employees;
 
 ### 인덱스 확장
 
-```
+```java
 CREATE TABLE dept_emp (
     emp_no INT NOT NULL,
     dept_no CHAR(4) NOT NULL,
@@ -333,7 +304,7 @@ CREATE TABLE dept_emp (
 
 **Spring Boot에서의 인덱스 머지 사용**
 
-```
+```java
 @Getter
 @Entity
 @Builder(toBuilder = true)
@@ -351,7 +322,3 @@ public class Expend {
     -   index\_merge\_intersection (교집합)
     -   index\_merge\_sort\_union (합집합)
     -   index\_merge\_union (정렬 후 합집합)
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 19 }
-
-공유하기

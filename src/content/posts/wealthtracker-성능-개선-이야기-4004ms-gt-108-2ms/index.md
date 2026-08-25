@@ -1,8 +1,11 @@
 ---
-title: "[WealthTracker] 성능 개선 이야기 4004ms-&gt;108.2ms"
-date: 2025-07-20
+title: "[WealthTracker] 성능 개선 이야기 4004ms->108.2ms - (1)성능 목표 잡기"
+date: 2025-07-21
+project: WealthTracker
 legacyUrl: "https://codekim3570.tistory.com/4"
----## **1\. 배경**
+---
+
+## **1\. 배경**
 
 * * *
 
@@ -27,31 +30,12 @@ WealthTracker 서비스의 핵심 API 중 유저의 지출 내역을 그래프�
 
 미리 생성해둔 유저들의 JWT 텍스트 파일을 통해 API 요청 시 필요한 Authorization Header를 삽입했습니다.
 
-**1단계**
+| 1단계 | 100명 | 3분 | 초기 워밍업 단계 |
+| --- | --- | --- | --- |
+| 2단계 | 500명 | 9분 | 중간 부하 상태 |
+| 3단계 | 1000명 | 15분 | 최대 동시 접속 부하 |
 
-100명
-
-3분
-
-초기 워밍업 단계
-
-**2단계**
-
-500명
-
-9분
-
-중간 부하 상태
-
-**3단계**
-
-1000명
-
-15분
-
-최대 동시 접속 부하
-
-```
+```java
 from locust import HttpUser, task, between
 from locust import LoadTestShape
 
@@ -102,19 +86,19 @@ class StagedLoadShape(LoadTestShape):
 
 #### **테스트 결과**
 
-![](https://blog.kakaocdn.net/dna/bPBJh9/btsPtDGODUE/AAAAAAAAAAAAAAAAAAAAABpdYzpwm102tk_xRX-oIRiX8bGkIIgZ9yiKGle7i-Dp/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=GJee41aMLQ5wuc0r0bEj7G6MN7Y%3D)
+![](./01-스크린샷-2025-07-21-22-34-48.png)
 
 초당 요청 수 RPS
 
-![](https://blog.kakaocdn.net/dna/qtbyW/btsPrRGApHe/AAAAAAAAAAAAAAAAAAAAAFBUgfnWD9HX_1kZkgwz3HJj_dEAX2ta6H5jzrvIureT/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=envavtM5J%2BpKEoZPmFBc4oL%2FuNc%3D)
+![](./02-스크린샷-2025-07-21-22-34-57.png)
 
 응답 시간 Response Time
 
-![](https://blog.kakaocdn.net/dna/kJYKl/btsPtBbaR0v/AAAAAAAAAAAAAAAAAAAAAH3QhpqP4BMtbgG7oG_ncbqRblorWgusQFOetr5sOhgU/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=YAzs9ovgzrnAG5gzs2BRJDLwhwI%3D)
+![](./03-스크린샷-2025-07-21-22-35-03.png)
 
 유저 수 Number Of Users
 
-![](https://blog.kakaocdn.net/dna/VRqQi/btsPs5DNcw2/AAAAAAAAAAAAAAAAAAAAAFQ39swrZjcRHTiKvG_Mq5l7_i38NE2j-EKwU7nAYY6I/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=IB1WctZHGAMA%2BlNVer19xtir%2BqQ%3D)
+![](./04-스크린샷-2025-07-21-22-35-11.png)
 
 전체적인 성능 테스트 결과 표
 
@@ -154,7 +138,7 @@ class StagedLoadShape(LoadTestShape):
 -   페이지 로딩 시간 1초 → 6초가 되면 이탈 확률 106% 증가
 -   페이지 로딩 시간 1초 → 10초가 되면 이탈 확률 123% 증가
 
-![](https://blog.kakaocdn.net/dna/0jwR8/btsPqNcvl44/AAAAAAAAAAAAAAAAAAAAACT_ktO8H4qqGGEncZ49RKi2jaBzWHO3J9QCx8C3PWkQ/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=z6dOcls22SE5KYs0OUHoXx4KZzE%3D)
+![](./05-mobile-page-speed-new-industry-benchmarks-01-01-.jpg)
 
 구글 리서치 결과 그래프
 
@@ -162,30 +146,7 @@ class StagedLoadShape(LoadTestShape):
 
 따라서, 아래와 같은 성능 목표를 잡았습니다.
 
- 
-
-**평균**
-
-**P95**
-
-**개선율**
-
-**기존**
-
-4004ms
-
-11000ms
-
-700.8%
-
-**목표**
-
-500ms
-
-1000ms
-
-900%
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 4 }
-
-공유하기
+|  | 평균 | P95 | 개선율 |
+| --- | --- | --- | --- |
+| 기존 | 4004ms | 11000ms | 700.8% |
+| 목표 | 500ms | 1000ms | 900% |

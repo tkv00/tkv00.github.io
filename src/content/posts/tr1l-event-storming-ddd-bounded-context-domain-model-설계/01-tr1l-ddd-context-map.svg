@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-label="TR1L DDD context map">
+  <defs>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #1a1a1a; }
+      .subtitle { font: 400 16px Arial, sans-serif; fill: #4b5563; }
+      .label { font: 700 20px Arial, sans-serif; fill: #111827; }
+      .body { font: 400 15px Arial, sans-serif; fill: #374151; }
+      .small { font: 400 14px Arial, sans-serif; fill: #6b7280; }
+      .storm { fill: #fff7ed; stroke: #ea580c; stroke-width: 2.5; rx: 18; ry: 18; }
+      .billing { fill: #eefbf2; stroke: #16a34a; stroke-width: 2.5; rx: 18; ry: 18; }
+      .dispatch { fill: #eff6ff; stroke: #2563eb; stroke-width: 2.5; rx: 18; ry: 18; }
+      .delivery { fill: #fdf2f8; stroke: #db2777; stroke-width: 2.5; rx: 18; ry: 18; }
+      .shared { fill: #f8fafc; stroke: #64748b; stroke-width: 2; rx: 18; ry: 18; }
+      .arrow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="620" fill="#fcfcfd"/>
+
+  <text x="60" y="56" class="title">TR1L Domain Context Map</text>
+  <text x="60" y="84" class="subtitle">Event Storming -> Bounded Context -> Shared Kernel</text>
+
+  <rect x="60" y="120" width="1080" height="100" class="storm"/>
+  <text x="90" y="160" class="label">Event Storming</text>
+  <text x="90" y="188" class="body">What must be recorded, where failures happen, what must never be duplicated</text>
+
+  <line x1="600" y1="220" x2="600" y2="270" class="arrow"/>
+
+  <rect x="90" y="270" width="280" height="170" class="billing"/>
+  <text x="120" y="308" class="label">Billing Context</text>
+  <text x="120" y="338" class="body">Monthly settlement</text>
+  <text x="120" y="364" class="body">Invoice aggregate</text>
+  <text x="120" y="390" class="body">Charge / Discount lines</text>
+  <text x="120" y="416" class="body">Snapshot-ready billing data</text>
+
+  <rect x="460" y="270" width="280" height="170" class="dispatch"/>
+  <text x="490" y="308" class="label">Dispatch Context</text>
+  <text x="490" y="338" class="body">Dispatch policy</text>
+  <text x="490" y="364" class="body">Channel routing order</text>
+  <text x="490" y="390" class="body">Candidate selection</text>
+  <text x="490" y="416" class="body">Dispatch request publish</text>
+
+  <rect x="830" y="270" width="280" height="170" class="delivery"/>
+  <text x="860" y="308" class="label">Delivery Context</text>
+  <text x="860" y="338" class="body">External notification send</text>
+  <text x="860" y="364" class="body">Duplicate guard</text>
+  <text x="860" y="390" class="body">Result event handling</text>
+  <text x="860" y="416" class="body">Final delivery status</text>
+
+  <line x1="370" y1="355" x2="460" y2="355" class="arrow"/>
+  <line x1="740" y1="355" x2="830" y2="355" class="arrow"/>
+
+  <rect x="300" y="490" width="600" height="80" class="shared"/>
+  <text x="330" y="525" class="label">Shared Kernel</text>
+  <text x="330" y="550" class="body">Common error model, encryption/decryption, masking, utility only</text>
+</svg>

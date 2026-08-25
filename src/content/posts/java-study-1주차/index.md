@@ -1,8 +1,12 @@
 ---
-title: "[JAVA-STUDY] 1주차"
+title: "[JAVA-STUDY] 1주차 - Java JVM"
 date: 2026-01-04
+category: 자바
+tags: ["java", "자바", "JVM"]
 legacyUrl: "https://codekim3570.tistory.com/25"
----# 📘 1. JVM의 개념
+---
+
+# 📘 1. JVM의 개념
 
 ## 1) 기본 개념
 
@@ -51,7 +55,7 @@ legacyUrl: "https://codekim3570.tistory.com/25"
 
 # 📘 2. JVM 동작 방식
 
-![](https://blog.kakaocdn.net/dna/s4KNo/dJMcagEctaD/AAAAAAAAAAAAAAAAAAAAABTdx-Pc1dvpJpWfCj5Ib5zWX1iNakHMc0Z-0cBzQ1SZ/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=tp3fJQwN4pnFmw%2BOWa%2FKL940yl8%3D)
+![](./01-zxczxas.jpg)
 
 1.  JAVA 프로그램 실행 시 JVM은 OS로부터 메모리를 할당 받는다.
 2.  **자바 컴파일러(javac)**가 **자바 소스코드(.java)**를 **자바 바이트 코드(.class)**로 컴파일한다.
@@ -63,7 +67,7 @@ legacyUrl: "https://codekim3570.tistory.com/25"
 
 : JVM으로 **클래스 파일(.class)**을 동적으로 로드하고, 링크를 통해 배치하는 작업을 수행하는 **모듈**. **바이트 코드(.class)**을 엮어서 JVM의 메모리 영역인 **Runtime Data Area**에 배치.
 
-![](https://blog.kakaocdn.net/dna/bSgbSK/dJMcadtR2nY/AAAAAAAAAAAAAAAAAAAAAPA9Kq1Ymu4wBrtGZuNyj-JsreRKcySTV49cTfYFEtrF/img.webp?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=7e0FlKsfCovJ1E6GO33RMwl4pE0%3D)
+![](./02-xvxzcv.webp)
 
 1.  ***Loading(로딩) : 클래스 파일을 가져와 JVM의 메모리에 로드.***
     1.  Class Loader가 클래스 파일을 읽고 내용에 따라 적절한 바이너리 코드를 만들어 메소드 영역에 저장.
@@ -110,7 +114,7 @@ legacyUrl: "https://codekim3570.tistory.com/25"
 
 : 자바 애플리케이션이 실행될 때 JVM이 OS로부터 할당받는 **메모리** 공간.
 
-![](https://blog.kakaocdn.net/dna/canWPK/dJMcacV4KEt/AAAAAAAAAAAAAAAAAAAAAE4IT3qypFdmN-LFb5W0olAuS9TFBf7alxjXjkSRsyBr/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=eB3eYNL7LMrgiBn2gOqzP0mIwTk%3D)
+![](./03-zxczxc.png)
 
 > **\[모든 쓰레드가 공유하는 영역\]**  
 > Method Area  
@@ -139,7 +143,7 @@ legacyUrl: "https://codekim3570.tistory.com/25"
 -   가비지 컬렉션의 대상이 되는 공간.’
 -   힙 영역에 생성된 객체와 배열은 **Reference Type**으로 **JVM 스택 영역의 변수**나 다른 객체의 필드에서 참조됨.
 
-![](https://blog.kakaocdn.net/dna/bcZs9m/dJMcafyuWkA/AAAAAAAAAAAAAAAAAAAAAHbHFK8Gyu4XJrZ9dGpGTXaa5egTb0dCLUhxWi-C2njh/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=e9c6T%2BU4k4Mrz%2Fpdvm7o%2BDNMI8A%3D)
+![](./04-xvxcvxv.png)
 
 -   힙 영역과 스택영역의 관계 
     
@@ -162,7 +166,7 @@ legacyUrl: "https://codekim3570.tistory.com/25"
     -   **스택** : name이라는 **변수 공간**이 생기고, 여기에 실제 데이터 대신 **힙**에 있는 객체 주소값(0x100) 저장.
 -   **Heap Area**(실제 물건) / **Stack Area**(물건을 가르키는 리모컨)
 
-![](https://blog.kakaocdn.net/dna/ztESA/dJMcaaRvaQE/AAAAAAAAAAAAAAAAAAAAALFF3S3kPp1iUQRTyQ5vx9d0HY5RBgoR_sZxlq2BUh5t/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=zHFFPUiTvL%2B1YJml1E%2F59%2FJD3c8%3D)
+![](./05-스크린샷-2025-12-19-16-26-44.png)
 
 Heap Area 구조
 
@@ -175,7 +179,7 @@ Heap Area 구조
 
 : 지역 변수, 파라미터, 리턴 값, 연산에 사용되는 임시 값등이 생성되는 영역으로 클래스 수준의 정보를 저장하고 공유.
 
-```
+```java
 int a = 10;
 
 => 'a'라는 메모리 영역을 잡고 해당 영역에 10을 할당. 스택에 'a'라는 이름의 값이 10인 메모리 공간을 만듦.
@@ -215,14 +219,10 @@ int a = 10;
 
 : 자바 코드 상 native 키워드를 사용해 선언된 메서드를 호출할 때, JVM이 해당 네이티브 메서드를 실행하기 위해 사용하는 별도의 스택 영역.
 
-![](https://blog.kakaocdn.net/dna/xKVaw/dJMcahpy6dQ/AAAAAAAAAAAAAAAAAAAAAMx8z08QhIjwbq2mKjq2Eav8ufHsudXfv3bJWdXwSq0T/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=1QYc0WJr5tekNFBS330hFe0OmZ8%3D)
+![](./06-ㅌㅊㅍㅋㅌㅊㅍ.png)
 
 -   자바가 컴파일되어 생성되는 바이트 코드가 아닌 실제 기계어로 작성된 프로그램을 실행.
 -   JIT 컴파일러에 의해 변환된 Native Code가 해당 부분에서 실행.
 -   JNI가 사용되면 네이티브 메서드 스택에서 바이트 코드로 전환되어 저장됨.
 -   메소드 실행 시 **JVM 스택**에 쌓이다가 해당 메소드 내부에 **native 방식**을 사용하는 메소드가 있으면 해당 메소드는 **Native Stack**에 쌓임.
 -   **네이티브 메소드**의 수행이 끝나면 다시 **Java Stack**으로 돌아와 다시 작업 수행.
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 25 }
-
-공유하기

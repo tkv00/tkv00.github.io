@@ -1,10 +1,12 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { unified, rehypeHeadingIds } from '@astrojs/markdown-remark';
-import { gitdolTheme } from './src/lib/shiki-theme.mjs';
+import { gitdolTheme, ignoreLanguage } from './src/lib/shiki-theme.mjs';
 import { commentTransformer } from './src/lib/shiki-comments.mjs';
 import { rehypeChrome } from './src/lib/rehype-chrome.mjs';
+import { rehypeBookmarks } from './src/lib/rehype-bookmarks.mjs';
 import { site } from './src/site.config.mjs';
+import { localEditor } from './scripts/local-editor.mjs';
 
 export default defineConfig({
   site: site.url,
@@ -19,10 +21,11 @@ export default defineConfig({
     // 코드 상자와 제목 앵커를 hast 단계에서 붙이므로 remark/rehype 파이프라인을 쓴다
     processor: unified({
       // 제목 id를 먼저 붙여야 그 아래에서 # 앵커를 걸 수 있다
-      rehypePlugins: [rehypeHeadingIds, rehypeChrome],
+      rehypePlugins: [rehypeHeadingIds, rehypeBookmarks, rehypeChrome],
     }),
     shikiConfig: {
       theme: gitdolTheme,
+      langs: [ignoreLanguage],
       wrap: false,
       transformers: [commentTransformer()],
     },
@@ -32,6 +35,7 @@ export default defineConfig({
     responsiveStyles: true,
   },
   vite: {
+    plugins: [localEditor()],
     build: { assetsInlineLimit: 0 },
   },
 });

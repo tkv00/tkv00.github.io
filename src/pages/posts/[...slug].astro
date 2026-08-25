@@ -21,6 +21,7 @@ const { Content, headings } = await render(post);
 const where = project ?? category;
 const desc = summary(post, 155);
 const year = new Date().getFullYear();
+const editorPreview = import.meta.env.DEV && Astro.url.searchParams.get('editor') === '1';
 ---
 
 <BaseLayout
@@ -31,6 +32,8 @@ const year = new Date().getFullYear();
   updated={updated}
   tags={[...tags, where].filter(Boolean)}
   image={`/og/${post.id}.png`}
+  noindex={editorPreview}
+  embed={editorPreview}
 >
   <div class="progress"><i></i></div>
 
@@ -65,7 +68,7 @@ const year = new Date().getFullYear();
         <Content />
       </div>
 
-      {(prev || next) && (
+      {!editorPreview && (prev || next) && (
         <nav class="pn">
           {prev ? (
             <a href={href(prev)}>
@@ -82,15 +85,15 @@ const year = new Date().getFullYear();
         </nav>
       )}
 
-      <Comments />
+      {!editorPreview && <Comments />}
 
-      <footer class="foot">
+      {!editorPreview && <footer class="foot">
         <span>{site.title} · © {year} 김도</span>
         <nav>
           <a class="lnk" href="/rss.xml">RSS</a>
           <a class="lnk" href="/posts">글 전체</a>
         </nav>
-      </footer>
+      </footer>}
     </article>
 
     <Toc headings={headings} />

@@ -1,14 +1,17 @@
 ---
-title: "[Vero] SMS 인증 서비스의 관심사 분할"
+title: "[Vero] SMS 인증 서비스의 관심사 분할 - SRP 단일 책임 원칙 기반"
 date: 2025-08-09
+project: Vero
 legacyUrl: "https://codekim3570.tistory.com/12"
----해당 글을 노션에 작성한 글을 티스토리로 재게시했습니다.
+---
+
+해당 글을 노션에 작성한 글을 티스토리로 재게시했습니다.
 
 ## **1\. 배경**
 
 * * *
 
-```
+```java
 @Service
 @RequiredArgsConstructor
 public class SmsServiceImpl implements SmsService{
@@ -85,7 +88,7 @@ public class SmsServiceImpl implements SmsService{
             -   1.  이메일 인증 유효
                 2.  휴대폰 메시지 인증 유효
 
-![](https://blog.kakaocdn.net/dna/TmnMl/btsPLideu8J/AAAAAAAAAAAAAAAAAAAAAAKmfDNBeliXdXtLH8LA7k48jCAuVIYRsaFqEvlSWI9A/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1788188399&allow_ip=&allow_referer=&signature=pTeG6C5P2hhNQIP0UlDltKtorH8%3D)
+![](./01-carbon.png)
 
 Custom 예외 처리 에러 메세지
 
@@ -110,7 +113,7 @@ Custom 예외 처리 에러 메세지
 
 #### SmsVerificationService 인터페이스
 
-```
+```java
 public interface SmsVerificationService {
     void verifySms(SmsCertificationRequestDto smsCertificationRequestDto);
 }
@@ -118,7 +121,7 @@ public interface SmsVerificationService {
 
 #### SmsVerificationServiceImpl
 
-```
+```java
 @Service
 @RequiredArgsConstructor
 public class SmsVerificationServiceImpl implements SmsVerificationService{
@@ -146,7 +149,3 @@ public class SmsVerificationServiceImpl implements SmsVerificationService{
 ```
 
 sms 인증번호 검증 행위는 **SmsVerificationServiceImpl**에서만 실행하고 sms를 보내는 행위는 **SmsService**에서만 실행됩니다.
-
-window.ReactionButtonType = 'reaction'; window.ReactionApiUrl = '//codekim3570.tistory.com/reaction'; window.ReactionReqBody = { entryId: 12 }
-
-공유하기

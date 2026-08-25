@@ -5,6 +5,21 @@
  */
 export const COMMENT_COLOR = '#5C6472';
 
+// Shiki에는 ignore 파일 문법이 내장되어 있지 않아 직접 등록한다.
+// 하나의 문법을 .gitignore와 .dockerignore가 함께 사용한다.
+export const ignoreLanguage = {
+  name: 'ignore',
+  displayName: 'Ignore file',
+  aliases: ['gitignore', 'dockerignore'],
+  scopeName: 'source.ignore',
+  patterns: [
+    { match: '^\\s*#.*$', name: 'comment.line.number-sign.ignore' },
+    { match: '^\\s*!', name: 'keyword.operator.negation.ignore' },
+    { match: '\\*\\*?|\\?', name: 'keyword.operator.wildcard.ignore' },
+    { match: '/$', name: 'punctuation.separator.directory.ignore' },
+  ],
+};
+
 export const gitdolTheme = {
   name: 'gitdol',
   type: 'dark',
