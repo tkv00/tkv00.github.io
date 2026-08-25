@@ -1,9 +1,12 @@
 ---
+import { Image } from 'astro:assets';
+import planet from '../assets/planet-obsidian.png';
+
 const { quiet = false } = Astro.props;
 /**
  * 배경 하늘. 별 두 겹이 아주 느리게 흐르고,
- * 별똥별 둘이 아래에서 위로 솟고, 오른쪽 아래에 고리 달린 행성이 걸려 있다.
- * 전부 CSS 애니메이션이라 스크립트가 붙지 않는다.
+ * 별똥별 둘이 아래에서 위로 솟고, 오른쪽 아래에는 흑요석 행성이 걸려 있다.
+ * 행성 이미지는 빌드할 때 WebP로 최적화하고, 고리와 암석 공전은 CSS로 그린다.
  */
 ---
 
@@ -37,34 +40,33 @@ const { quiet = false } = Astro.props;
     </svg>
   </div>
 
-  <svg class="planet" viewBox="0 0 720 720" fill="none">
-    <defs>
-      <radialGradient id="pl" cx="30%" cy="24%" r="82%">
-        <stop offset="0%" stop-color="#2e3440" />
-        <stop offset="48%" stop-color="#191d24" />
-        <stop offset="100%" stop-color="#0b0d11" />
-      </radialGradient>
-      <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#d9bc90" stop-opacity=".55" />
-        <stop offset="55%" stop-color="#d9bc90" stop-opacity="0" />
-      </linearGradient>
-      <radialGradient id="halo" cx="50%" cy="50%" r="50%">
-        <stop offset="72%" stop-color="#8aa0c8" stop-opacity="0" />
-        <stop offset="88%" stop-color="#8aa0c8" stop-opacity=".10" />
-        <stop offset="100%" stop-color="#8aa0c8" stop-opacity="0" />
-      </radialGradient>
-    </defs>
-    <circle cx="360" cy="360" r="352" fill="url(#halo)" />
-    <circle cx="360" cy="360" r="288" fill="url(#pl)" />
-    <path d="M360 72a288 288 0 00-203.6 491.6" stroke="url(#rim)" stroke-width="2.4" fill="none" />
-    <g opacity=".5">
-      <ellipse cx="360" cy="272" rx="270" ry="26" fill="rgba(255,255,255,.022)" />
-      <ellipse cx="360" cy="356" rx="286" ry="34" fill="rgba(255,255,255,.016)" />
-      <ellipse cx="360" cy="452" rx="262" ry="22" fill="rgba(0,0,0,.16)" />
-    </g>
-    <circle cx="252" cy="238" r="34" fill="rgba(255,255,255,.02)" />
-    <circle cx="446" cy="418" r="52" fill="rgba(0,0,0,.13)" />
-    <ellipse cx="360" cy="360" rx="392" ry="96" stroke="rgba(217,188,144,.20)" stroke-width="1.4" fill="none" transform="rotate(-19 360 360)" />
-    <ellipse cx="360" cy="360" rx="424" ry="112" stroke="rgba(160,180,220,.10)" stroke-width="1" fill="none" transform="rotate(-19 360 360)" />
-  </svg>
+  <div class="planet-system">
+    <div class="orbit-plane orbit-plane-back">
+      <span class="orbit-ring orbit-ring-wide"></span>
+      <span class="orbit-ring orbit-ring-inner"></span>
+      <span class="orbit-rock" style="--rock-size: 12px; --orbit-time: 47s; --orbit-delay: -31s;"></span>
+      <span class="orbit-rock" style="--rock-size: 7px; --orbit-time: 61s; --orbit-delay: -17s;"></span>
+      <span class="orbit-rock" style="--rock-size: 16px; --orbit-time: 73s; --orbit-delay: -52s;"></span>
+    </div>
+
+    <Image
+      class="planet"
+      src={planet}
+      alt=""
+      format="webp"
+      quality={82}
+      loading="eager"
+      fetchpriority="low"
+      decoding="async"
+    />
+
+    <div class="orbit-plane orbit-plane-front">
+      <span class="orbit-ring orbit-ring-wide"></span>
+      <span class="orbit-ring orbit-ring-inner"></span>
+      <span class="orbit-rock" style="--rock-size: 15px; --orbit-time: 54s; --orbit-delay: -8s;"></span>
+      <span class="orbit-rock" style="--rock-size: 8px; --orbit-time: 39s; --orbit-delay: -27s;"></span>
+      <span class="orbit-rock" style="--rock-size: 19px; --orbit-time: 68s; --orbit-delay: -43s;"></span>
+      <span class="orbit-rock" style="--rock-size: 5px; --orbit-time: 33s; --orbit-delay: -19s;"></span>
+    </div>
+  </div>
 </div>
