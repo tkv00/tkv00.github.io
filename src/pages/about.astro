@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { allPosts, tagCloud } from '../lib/posts.mjs';
+import { site, author, projectOrder } from '../site.config.mjs';
+
+const posts = await allPosts();
+const cloud = tagCloud(posts).slice(0, 12);
+const projects = projectOrder.filter((name) => posts.some((p) => p.data.project === name));
+const year = new Date().getFullYear();
+---
+
+<BaseLayout title="소개" description={author.bio}>
+  <div class="wrap">
+    <header class="sec-head rise">
+      <h1>소개</h1>
+      <span class="meta">{author.name}</span>
+    </header>
+
+    <div class="prose rise" style="max-width:640px;">
+      <p>{author.bio}</p>
+      <p>
+        여기 있는 글은 대부분 뭔가 잘 안 되던 날에 시작합니다. 부하를 걸어보고, 어디서 깨지는지 찾고,
+        왜 깨졌는지를 남겨둡니다. 나중에 같은 자리에서 넘어질 저를 위한 기록이고,
+        같은 곳에서 헤매는 누군가에게 닿으면 더 좋고요.
+      </p>
+
+      <h2>지금까지</h2>
+      <ul>
+        <li>글 {posts.length}편</li>
+        {projects.length > 0 && <li>프로젝트 {projects.join(' · ')}</li>}
+        <li>{site.since}년부터 씁니다</li>
+      </ul>
+
+      <h2>연락</h2>
+      <ul>
+        <li>GitHub — <a href={`https://github.com/${author.github}`} target="_blank" rel="noopener">@{author.github}</a></li>
+        <li>메일 — <a href={`mailto:${author.email}`}>{author.email}</a></li>
+        <li>새 글 알림 — <a href="/rss.xml">RSS</a></li>
+      </ul>
+    </div>
+
+    {cloud.length > 0 && (
+      <div class="cloud rise">
+        {cloud.map(([tag, n]) => <a href={`/tags/${encodeURIComponent(tag)}`}>{tag}<span>{n}</span></a>)}
+      </div>
+    )}
+
+    <footer class="foot">
+      <span>{site.title} · © {year} {author.name}</span>
+      <nav><a class="lnk" href="/posts">글 전체</a></nav>
+    </footer>
+  </div>
+</BaseLayout>

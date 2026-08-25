@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostRow from '../../components/PostRow.astro';
+import { allPosts } from '../../lib/posts.mjs';
+import { site } from '../../site.config.mjs';
+
+const posts = await allPosts();
+
+/** 연도별로 묶는다. */
+const byYear = [];
+for (const p of posts) {
+  const y = p.data.date.getFullYear();
+  const last = byYear[byYear.length - 1];
+  if (last && last.year === y) last.items.push(p);
+  else byYear.push({ year: y, items: [p] });
+}
+const now = new Date().getFullYear();
+---
+
+<BaseLayout title="글 전체" description={`${site.title}에 쓴 글 ${posts.length}편 전부.`}>
+  <div class="wrap">
+    <header class="sec-head rise">
+      <h1>글 전체</h1>
+      <span class="meta">{posts.length}편</span>
+    </header>
+
+    {byYear.map(({ year, items }) => (
+      <section>
+        <div class="year"><b>{year}</b><i></i><b style="color:var(--t3)">{items.length}</b></div>
+        <div class="rows">
+          {items.map((p) => <div class="rise"><PostRow post={p} /></div>)}
+        </div>
+      </section>
+    ))}
+
+    <footer class="foot">
+      <span>{site.title} · © {now} 김도</span>
+      <nav>
+        <a class="lnk" href="/rss.xml">RSS</a>
+        <a class="lnk" href="/tags">태그</a>
+      </nav>
+    </footer>
+  </div>
+</BaseLayout>

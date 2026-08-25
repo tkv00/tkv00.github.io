@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { allPosts, tagCloud } from '../../lib/posts.mjs';
+import { site } from '../../site.config.mjs';
+
+const posts = await allPosts();
+const cloud = tagCloud(posts);
+const year = new Date().getFullYear();
+---
+
+<BaseLayout title="태그" description={`${site.title}의 태그 ${cloud.length}개.`}>
+  <div class="wrap">
+    <header class="sec-head rise">
+      <h1>태그</h1>
+      <span class="meta">{cloud.length}개</span>
+    </header>
+
+    <div class="cloud">
+      {cloud.map(([tag, n]) => (
+        <a href={`/tags/${encodeURIComponent(tag)}`}>{tag}<span>{n}</span></a>
+      ))}
+    </div>
+
+    <footer class="foot">
+      <span>{site.title} · © {year} 김도</span>
+      <nav><a class="lnk" href="/posts">글 전체</a></nav>
+    </footer>
+  </div>
+</BaseLayout>

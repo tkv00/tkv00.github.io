@@ -1,0 +1,43 @@
+---
+import { giscus } from '../site.config.mjs';
+
+const ready =
+  giscus.enabled &&
+  giscus.repoId && !giscus.repoId.includes('붙여넣기') &&
+  giscus.categoryId && !giscus.categoryId.includes('붙여넣기');
+---
+
+<section class="comments" id="comments">
+  <header>
+    <h2>댓글</h2>
+    <small>GitHub Discussions에 저장됩니다</small>
+  </header>
+
+  {ready ? (
+    <script
+      is:inline
+      src="https://giscus.app/client.js"
+      data-repo={giscus.repo}
+      data-repo-id={giscus.repoId}
+      data-category={giscus.category}
+      data-category-id={giscus.categoryId}
+      data-mapping={giscus.mapping}
+      data-strict="0"
+      data-reactions-enabled={giscus.reactionsEnabled}
+      data-emit-metadata="0"
+      data-input-position="top"
+      data-theme="transparent_dark"
+      data-lang={giscus.lang}
+      data-loading="lazy"
+      crossorigin="anonymous"
+      async
+    />
+  ) : (
+    <p style="margin:0;padding:22px 24px;border:1px dashed rgba(255,255,255,.12);border-radius:8px;font-size:13.5px;line-height:1.9;color:var(--t3);">
+      댓글을 켜려면 <code style="font-family:var(--mono);color:var(--acc)">src/site.config.mjs</code> 의
+      <code style="font-family:var(--mono);color:var(--acc)">giscus.repoId</code> 와
+      <code style="font-family:var(--mono);color:var(--acc)">categoryId</code> 를 채워주세요.
+      <br />값은 <a class="lnk" href="https://giscus.app" target="_blank" rel="noopener">giscus.app</a> 에서 저장소 주소를 넣으면 바로 나옵니다.
+    </p>
+  )}
+</section>

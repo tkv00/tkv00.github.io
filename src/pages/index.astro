@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostRow from '../components/PostRow.astro';
+import { allPosts } from '../lib/posts.mjs';
+import { site } from '../site.config.mjs';
+
+const posts = await allPosts();
+const [lead, ...rest] = posts;
+const recent = rest.slice(0, 6);
+const year = new Date().getFullYear();
+---
+
+<BaseLayout description={site.description}>
+  <div class="wrap">
+    <header class="sec-head rise">
+      <h1>최근 글</h1>
+      <span class="meta">{year} · {posts.length}편</span>
+    </header>
+
+    {posts.length === 0 ? (
+      <p style="padding:60px 0;color:var(--t3);font-size:14px;">
+        아직 글이 없습니다. <code style="font-family:var(--mono);color:var(--acc)">src/content/posts/</code> 에 첫 글을 넣거나
+        <code style="font-family:var(--mono);color:var(--acc)">npm run migrate</code> 로 티스토리 글을 옮겨오세요.
+      </p>
+    ) : (
+      <div class="rows">
+        <div class="rise"><PostRow post={lead} lead /></div>
+        {recent.map((p) => <div class="rise"><PostRow post={p} /></div>)}
+      </div>
+    )}
+
+    {rest.length > recent.length && (
+      <a class="btn rise" href="/posts" style="margin-top:38px;">
+        <span>글 더 보기</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v13" /><path d="M6 12l6 6 6-6" /></svg>
+      </a>
+    )}
+
+    <footer class="foot">
+      <span>{site.title} · © {year} 김도</span>
+      <nav>
+        <a class="lnk" href="/rss.xml">RSS</a>
+        <a class="lnk" href="https://github.com/tkv00" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </footer>
+  </div>
+</BaseLayout>

@@ -1,0 +1,98 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Toc from '../../components/Toc.astro';
+import Comments from '../../components/Comments.astro';
+import { allPosts, day, href, minutes, neighbors, summary } from '../../lib/posts.mjs';
+import { site } from '../../site.config.mjs';
+
+export async function getStaticPaths() {
+  const posts = await allPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { title, description, date, updated, project, category, tags } = post.data;
+
+const posts = await allPosts();
+const { prev, next } = neighbors(posts, post.id);
+const { Content, headings } = await render(post);
+
+const where = project ?? category;
+const desc = summary(post, 155);
+const year = new Date().getFullYear();
+---
+
+<BaseLayout
+  title={title}
+  description={desc}
+  kind="article"
+  published={date}
+  updated={updated}
+  tags={[...tags, where].filter(Boolean)}
+  image={`/og/${post.id}.png`}
+>
+  <div class="progress"><i></i></div>
+
+  <div class="article">
+    <article>
+      <header class="head rise">
+        <nav class="crumb">
+          <a class="lnk" href="/">홈</a>
+          <span class="sep">/</span>
+          <a class="lnk" href="/posts">글 전체</a>
+          {where && <><span class="sep">/</span><a class="now lnk" href={`/tags/${encodeURIComponent(where)}`}>{where}</a></>}
+        </nav>
+
+        <h1>{title}</h1>
+        {description && <p class="lede">{description}</p>}
+
+        <div class="facts">
+          <span>{day(date)}</span>
+          <span class="sep">·</span>
+          <span>{minutes(post.body)}분</span>
+          {updated && <><span class="sep">·</span><span>{day(updated)} 고침</span></>}
+        </div>
+
+        {tags.length > 0 && (
+          <div class="tags">
+            {tags.map((t) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>{t}</a>)}
+          </div>
+        )}
+      </header>
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      {(prev || next) && (
+        <nav class="pn">
+          {prev ? (
+            <a href={href(prev)}>
+              <small><span class="pa">←</span> 이전 글</small>
+              <strong>{prev.data.title}</strong>
+            </a>
+          ) : <span />}
+          {next ? (
+            <a class="next" href={href(next)}>
+              <small>다음 글 <span class="pa">→</span></small>
+              <strong>{next.data.title}</strong>
+            </a>
+          ) : <span />}
+        </nav>
+      )}
+
+      <Comments />
+
+      <footer class="foot">
+        <span>{site.title} · © {year} 김도</span>
+        <nav>
+          <a class="lnk" href="/rss.xml">RSS</a>
+          <a class="lnk" href="/posts">글 전체</a>
+        </nav>
+      </footer>
+    </article>
+
+    <Toc headings={headings} />
+  </div>
+</BaseLayout>

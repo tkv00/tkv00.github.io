@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../site.config.mjs';
+---
+
+<BaseLayout title="여기엔 아무것도 없습니다" noindex>
+  <div class="wrap">
+    <div class="rise" style="display:flex;flex-direction:column;gap:20px;padding:110px 0 0;max-width:520px;">
+      <span class="mono" style="font-size:12px;letter-spacing:.2em;color:var(--acc)">404</span>
+      <h1 style="margin:0;font-size:34px;line-height:1.45;font-weight:700;letter-spacing:-.028em;color:#f2f4f9;">
+        찾으시는 글이 이 궤도엔 없습니다
+      </h1>
+      <p style="margin:0;font-size:15px;line-height:1.95;font-weight:300;color:var(--t2);">
+        주소가 바뀌었거나, 아직 쓰지 않은 글일 수 있습니다.
+        티스토리에서 오셨다면 글 목록에서 제목으로 찾아보세요.
+      </p>
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <a class="btn" href="/" style="padding:13px 22px;">홈으로</a>
+        <a class="btn" href="/posts" style="padding:13px 22px;">글 전체 보기</a>
+      </div>
+    </div>
+
+    <footer class="foot" style="margin-top:120px;">
+      <span>{site.title}</span>
+      <nav><a class="lnk" href="/rss.xml">RSS</a></nav>
+    </footer>
+  </div>
+</BaseLayout>

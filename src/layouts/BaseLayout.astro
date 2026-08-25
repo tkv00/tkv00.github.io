@@ -1,0 +1,197 @@
+---
+import Sky from '../components/Sky.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { site, author, analytics, verification } from '../site.config.mjs';
+import '../styles/global.css';
+
+const {
+  title,
+  description = site.description,
+  /** 'website' | 'article' */
+  kind = 'website',
+  published,
+  updated,
+  tags = [],
+  image,
+  noindex = false,
+  quiet = kind === 'article',
+} = Astro.props;
+
+const path = Astro.url.pathname;
+const canonical = new URL(path, site.url).href;
+const fullTitle = title ? `${title} · ${site.title}` : `${site.title} — ${site.description}`;
+const ogImage = new URL(image ?? '/og/default.png', site.url).href;
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': kind === 'article' ? 'BlogPosting' : 'Blog',
+  headline: title ?? site.title,
+  description,
+  url: canonical,
+  image: ogImage,
+  inLanguage: 'ko-KR',
+  author: { '@type': 'Person', name: author.name, url: `https://github.com/${author.github}` },
+  publisher: { '@type': 'Person', name: author.name },
+  ...(kind === 'article' && {
+    datePublished: published?.toISOString(),
+    dateModified: (updated ?? published)?.toISOString(),
+    keywords: tags.join(', '),
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+  }),
+};
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#08090c" />
+    <meta name="color-scheme" content="dark" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex,nofollow" />}
+
+    <!-- 검색엔진에게 알리는 것들 -->
+    <meta property="og:type" content={kind === 'article' ? 'article' : 'website'} />
+    <meta property="og:site_name" content={site.title} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:title" content={title ?? site.title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    {kind === 'article' && published && <meta property="article:published_time" content={published.toISOString()} />}
+    {kind === 'article' && updated && <meta property="article:modified_time" content={updated.toISOString()} />}
+    {tags.map((t) => <meta property="article:tag" content={t} />)}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title ?? site.title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {verification.google && <meta name="google-site-verification" content={verification.google} />}
+    {verification.naver && <meta name="naver-site-verification" content={verification.naver} />}
+
+    <link rel="alternate" type="application/rss+xml" title={site.title} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://giscus.app" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(ld)} is:inline />
+
+    {analytics.goatcounter && (
+      <script
+        is:inline
+        async
+        data-goatcounter={`https://${analytics.goatcounter}.goatcounter.com/count`}
+        src="//gc.zgo.at/count.js"
+      />
+    )}
+  </head>
+
+  <body>
+    <Sky quiet={quiet} />
+
+    <div class="shell">
+      <Sidebar path={path} />
+      <main class="main">
+        <slot />
+      </main>
+    </div>
+
+    <a class="top" href="#" aria-label="맨 위로">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6" /><path d="M6 12l6-6 6 6" /></svg>
+    </a>
+
+    <script is:inline>
+      // ── 코드 복사 ─────────────────────────────────────────
+      document.querySelectorAll('.codebox').forEach((box) => {
+        const btn = box.querySelector('button[data-copy]');
+        const code = box.querySelector('pre');
+        if (!btn || !code) return;
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(code.innerText);
+            const was = btn.querySelector('span').textContent;
+            btn.querySelector('span').textContent = '복사됨';
+            btn.classList.add('done');
+            setTimeout(() => {
+              btn.querySelector('span').textContent = was;
+              btn.classList.remove('done');
+            }, 1600);
+          } catch (_) {}
+        });
+      });
+
+      // ── 맨 위로 ───────────────────────────────────────────
+      const top = document.querySelector('.top');
+      if (top) {
+        top.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      // ── 읽기 진행바 + 목차 따라가기 ────────────────────────
+      const bar = document.querySelector('.progress > i');
+      const links = [...document.querySelectorAll('.toc a')];
+      const heads = links
+        .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
+        .filter(Boolean);
+
+      let ticking = false;
+      const paint = () => {
+        ticking = false;
+        if (bar) {
+          const h = document.documentElement.scrollHeight - window.innerHeight;
+          bar.style.width = (h > 0 ? Math.min(100, (window.scrollY / h) * 100) : 0) + '%';
+        }
+        if (top) top.classList.toggle('on', window.scrollY > 400);
+        if (heads.length) {
+          let idx = 0;
+          heads.forEach((el, i) => {
+            if (el.getBoundingClientRect().top <= 120) idx = i;
+          });
+          links.forEach((a, i) => a.classList.toggle('on', i === idx));
+        }
+      };
+      const onScroll = () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(paint);
+        }
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      paint();
+    </script>
+
+    {analytics.goatcounter && (
+      <script is:inline define:vars={{ code: analytics.goatcounter }}>
+        // 방문자 수를 사이드바에 채워 넣는다 (GoatCounter 공개 통계 API)
+        (async () => {
+          const box = document.querySelector('[data-visits]');
+          if (!box) return;
+          const nf = new Intl.NumberFormat('ko-KR');
+          const get = async (path) => {
+            const r = await fetch(`https://${code}.goatcounter.com/counter/${path}.json`);
+            if (!r.ok) throw new Error('nope');
+            return (await r.json()).count_unique ?? (await r.json()).count;
+          };
+          try {
+            const total = await get('TOTAL');
+            document.getElementById('v-total').textContent = nf.format(Number(String(total).replace(/\D/g, '')));
+            document.getElementById('v-today').textContent = '오늘';
+          } catch (_) {
+            box.textContent = '';
+          }
+        })();
+      </script>
+    )}
+  </body>
+</html>

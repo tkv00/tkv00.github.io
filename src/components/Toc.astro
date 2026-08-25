@@ -1,0 +1,15 @@
+---
+const { headings = [] } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{items.length > 1 && (
+  <nav class="toc" aria-label="목차">
+    <h2>목차</h2>
+    {items.map((h) => (
+      <a href={`#${h.slug}`} class={h.depth === 3 ? 'd3' : ''}>
+        <i></i>{h.text}
+      </a>
+    ))}
+  </nav>
+)}

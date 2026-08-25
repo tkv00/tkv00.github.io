@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>깃돌 · 글쓰기</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      html { background: #08090c; color-scheme: dark; }
+      body { margin: 0; }
+      #boot {
+        position: fixed; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 18px;
+        background: #08090c; color: #aab0bc;
+        font-family: 'Pretendard Variable', Pretendard, -apple-system, system-ui, sans-serif;
+        transition: opacity .4s ease;
+      }
+      #boot.gone { opacity: 0; pointer-events: none; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      #boot .orb { width: 34px; height: 34px; border-radius: 50%;
+        border: 1.5px solid rgba(255,255,255,.1); border-top-color: #d9bc90;
+        animation: spin 1s linear infinite; }
+      #boot b { font-size: 15px; font-weight: 600; color: #eef1f6; letter-spacing: -.01em; }
+      #boot small { font-size: 12.5px; color: #6f7682; line-height: 1.8; text-align: center; max-width: 340px; }
+    </style>
+  </head>
+  <body>
+    <div id="boot">
+      <div class="orb"></div>
+      <b>깃돌 글쓰기</b>
+      <small>
+        불러오는 중입니다.<br />
+        <strong style="color:#aab0bc;font-weight:500">Sign In with Token</strong> 을 눌러
+        GitHub 개인 토큰을 넣으면 들어갑니다.
+      </small>
+    </div>
+
+    <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+    <script>
+      // CMS 화면이 뜨면 로딩 화면을 치운다
+      const boot = document.getElementById('boot');
+      const hide = () => boot && boot.classList.add('gone');
+      window.addEventListener('load', () => setTimeout(hide, 1200));
+      new MutationObserver((_, ob) => {
+        if (document.querySelector('#nc-root, .sveltia-cms, [class*="sveltia"]')) { hide(); ob.disconnect(); }
+      }).observe(document.body, { childList: true, subtree: true });
+    </script>
+  </body>
+</html>

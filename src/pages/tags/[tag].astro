@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostRow from '../../components/PostRow.astro';
+import { allPosts, hasTag, tagCloud } from '../../lib/posts.mjs';
+import { site } from '../../site.config.mjs';
+
+export async function getStaticPaths() {
+  const posts = await allPosts();
+  return tagCloud(posts).map(([tag]) => ({
+    params: { tag },
+    props: { tag, items: posts.filter((p) => hasTag(p, tag)) },
+  }));
+}
+
+const { tag, items } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<BaseLayout title={tag} description={`'${tag}' 로 묶인 글 ${items.length}편.`}>
+  <div class="wrap">
+    <header class="sec-head rise">
+      <h1>{tag}</h1>
+      <span class="meta">{items.length}편</span>
+    </header>
+
+    <div class="rows">
+      {items.map((p) => <div class="rise"><PostRow post={p} /></div>)}
+    </div>
+
+    <a class="btn rise" href="/tags" style="margin-top:38px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H6" /><path d="M11 6l-6 6 6 6" /></svg>
+      <span>모든 태그</span>
+    </a>
+
+    <footer class="foot">
+      <span>{site.title} · © {year} 김도</span>
+      <nav><a class="lnk" href="/posts">글 전체</a></nav>
+    </footer>
+  </div>
+</BaseLayout>
