@@ -1,12 +1,9 @@
 ---
-import { Image } from 'astro:assets';
-import planet from '../assets/planet-obsidian.png';
-
 const { quiet = false } = Astro.props;
 /**
  * 배경 하늘. 별 두 겹이 아주 느리게 흐르고,
  * 별똥별 둘이 아래에서 위로 솟고, 오른쪽 아래에는 흑요석 행성이 걸려 있다.
- * 행성 이미지는 빌드할 때 WebP로 최적화하고, 고리와 암석 공전은 CSS로 그린다.
+ * 행성은 이미지가 아니라 캔버스에 매 프레임 직접 그린다 — src/scripts/planet.js
  */
 ---
 
@@ -40,68 +37,12 @@ const { quiet = false } = Astro.props;
     </svg>
   </div>
 
-  <div class="planet-system">
-    <span class="planet-atmosphere"></span>
-
-    <div class="plasma-orbits plasma-orbits-back">
-      <div class="plasma-plane plasma-plane-a">
-        <span class="plasma-track"></span>
-        <span class="plasma-spark" style="--spark-time: 37s; --spark-delay: -18s; --spark-color: #83bff1; --spark-length: 24px;"></span>
-        <span class="plasma-spark" style="--spark-time: 49s; --spark-delay: -31s; --spark-color: #d9bc90; --spark-length: 11px;"></span>
-        <span class="plasma-spark" style="--spark-time: 61s; --spark-delay: -45s; --spark-color: #658fbd; --spark-length: 7px;"></span>
-      </div>
-      <div class="plasma-plane plasma-plane-b">
-        <span class="plasma-track"></span>
-        <span class="plasma-spark" style="--spark-time: 53s; --spark-delay: -26s; --spark-color: #e4cba3; --spark-length: 21px;"></span>
-        <span class="plasma-spark" style="--spark-time: 71s; --spark-delay: -54s; --spark-color: #769fd0; --spark-length: 9px;"></span>
-      </div>
-    </div>
-
-    <div class="orbit-plane orbit-plane-back">
-      <span class="orbit-ring orbit-ring-wide"></span>
-      <span class="orbit-ring orbit-ring-inner"></span>
-      <span class="orbit-rock" style="--rock-size: 12px; --orbit-time: 47s; --orbit-delay: -31s;"></span>
-      <span class="orbit-rock" style="--rock-size: 7px; --orbit-time: 61s; --orbit-delay: -17s;"></span>
-      <span class="orbit-rock" style="--rock-size: 16px; --orbit-time: 73s; --orbit-delay: -52s;"></span>
-    </div>
-
-    <Image
-      class="planet"
-      src={planet}
-      alt=""
-      format="webp"
-      quality={82}
-      loading="eager"
-      fetchpriority="low"
-      decoding="async"
-    />
-
-    <span class="planet-terminator"></span>
-    <span class="planet-surface-flow"></span>
-    <span class="planet-aurora"></span>
-    <span class="planet-horizon-glint"></span>
-
-    <div class="orbit-plane orbit-plane-front">
-      <span class="orbit-ring orbit-ring-wide"></span>
-      <span class="orbit-ring orbit-ring-inner"></span>
-      <span class="orbit-rock" style="--rock-size: 15px; --orbit-time: 54s; --orbit-delay: -8s;"></span>
-      <span class="orbit-rock" style="--rock-size: 8px; --orbit-time: 39s; --orbit-delay: -27s;"></span>
-      <span class="orbit-rock" style="--rock-size: 19px; --orbit-time: 68s; --orbit-delay: -43s;"></span>
-      <span class="orbit-rock" style="--rock-size: 5px; --orbit-time: 33s; --orbit-delay: -19s;"></span>
-    </div>
-
-    <div class="plasma-orbits plasma-orbits-front">
-      <div class="plasma-plane plasma-plane-a plasma-plane-front">
-        <span class="plasma-track"></span>
-        <span class="plasma-spark" style="--spark-time: 37s; --spark-delay: -18s; --spark-color: #83bff1; --spark-length: 24px;"></span>
-        <span class="plasma-spark" style="--spark-time: 49s; --spark-delay: -31s; --spark-color: #d9bc90; --spark-length: 11px;"></span>
-        <span class="plasma-spark" style="--spark-time: 61s; --spark-delay: -45s; --spark-color: #658fbd; --spark-length: 7px;"></span>
-      </div>
-      <div class="plasma-plane plasma-plane-b plasma-plane-front">
-        <span class="plasma-track"></span>
-        <span class="plasma-spark" style="--spark-time: 53s; --spark-delay: -26s; --spark-color: #e4cba3; --spark-length: 21px;"></span>
-        <span class="plasma-spark" style="--spark-time: 71s; --spark-delay: -54s; --spark-color: #769fd0; --spark-length: 9px;"></span>
-      </div>
-    </div>
-  </div>
+  <canvas class="planet-canvas"></canvas>
 </div>
+
+<script>
+  import { mountPlanetScene } from '../scripts/planet.js';
+
+  const canvas = document.querySelector('.planet-canvas');
+  if (canvas instanceof HTMLCanvasElement) mountPlanetScene(canvas);
+</script>
