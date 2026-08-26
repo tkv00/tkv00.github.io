@@ -41,6 +41,22 @@ const { quiet = false } = Astro.props;
   </div>
 
   <div class="planet-system">
+    <span class="planet-atmosphere"></span>
+
+    <div class="plasma-orbits plasma-orbits-back">
+      <div class="plasma-plane plasma-plane-a">
+        <span class="plasma-track"></span>
+        <span class="plasma-spark" style="--spark-time: 37s; --spark-delay: -18s; --spark-color: #83bff1; --spark-length: 24px;"></span>
+        <span class="plasma-spark" style="--spark-time: 49s; --spark-delay: -31s; --spark-color: #d9bc90; --spark-length: 11px;"></span>
+        <span class="plasma-spark" style="--spark-time: 61s; --spark-delay: -45s; --spark-color: #658fbd; --spark-length: 7px;"></span>
+      </div>
+      <div class="plasma-plane plasma-plane-b">
+        <span class="plasma-track"></span>
+        <span class="plasma-spark" style="--spark-time: 53s; --spark-delay: -26s; --spark-color: #e4cba3; --spark-length: 21px;"></span>
+        <span class="plasma-spark" style="--spark-time: 71s; --spark-delay: -54s; --spark-color: #769fd0; --spark-length: 9px;"></span>
+      </div>
+    </div>
+
     <div class="orbit-plane orbit-plane-back">
       <span class="orbit-ring orbit-ring-wide"></span>
       <span class="orbit-ring orbit-ring-inner"></span>
@@ -60,6 +76,11 @@ const { quiet = false } = Astro.props;
       decoding="async"
     />
 
+    <span class="planet-terminator"></span>
+    <span class="planet-surface-flow"></span>
+    <span class="planet-aurora"></span>
+    <span class="planet-horizon-glint"></span>
+
     <div class="orbit-plane orbit-plane-front">
       <span class="orbit-ring orbit-ring-wide"></span>
       <span class="orbit-ring orbit-ring-inner"></span>
@@ -67,6 +88,20 @@ const { quiet = false } = Astro.props;
       <span class="orbit-rock" style="--rock-size: 8px; --orbit-time: 39s; --orbit-delay: -27s;"></span>
       <span class="orbit-rock" style="--rock-size: 19px; --orbit-time: 68s; --orbit-delay: -43s;"></span>
       <span class="orbit-rock" style="--rock-size: 5px; --orbit-time: 33s; --orbit-delay: -19s;"></span>
+    </div>
+
+    <div class="plasma-orbits plasma-orbits-front">
+      <div class="plasma-plane plasma-plane-a plasma-plane-front">
+        <span class="plasma-track"></span>
+        <span class="plasma-spark" style="--spark-time: 37s; --spark-delay: -18s; --spark-color: #83bff1; --spark-length: 24px;"></span>
+        <span class="plasma-spark" style="--spark-time: 49s; --spark-delay: -31s; --spark-color: #d9bc90; --spark-length: 11px;"></span>
+        <span class="plasma-spark" style="--spark-time: 61s; --spark-delay: -45s; --spark-color: #658fbd; --spark-length: 7px;"></span>
+      </div>
+      <div class="plasma-plane plasma-plane-b plasma-plane-front">
+        <span class="plasma-track"></span>
+        <span class="plasma-spark" style="--spark-time: 53s; --spark-delay: -26s; --spark-color: #e4cba3; --spark-length: 21px;"></span>
+        <span class="plasma-spark" style="--spark-time: 71s; --spark-delay: -54s; --spark-color: #769fd0; --spark-length: 9px;"></span>
+      </div>
     </div>
   </div>
 </div>

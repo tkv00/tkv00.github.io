@@ -69,7 +69,9 @@ p { text-wrap: pretty; }
 /* ══════════════════════════════════════════════════════════
    하늘 — 별, 별똥별, 행성
    ══════════════════════════════════════════════════════════ */
-.sky { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.sky {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+}
 
 @keyframes drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, -620px, 0); } }
 @keyframes tw { 0%, 100% { opacity: 0.22; } 50% { opacity: 0.68; } }
@@ -122,6 +124,20 @@ p { text-wrap: pretty; }
   0%, 100% { opacity: 0.32; transform: scale(0.96); }
   50% { opacity: 0.58; transform: scale(1.04); }
 }
+@keyframes atmosphere-breathe {
+  0%, 100% { opacity: 0.62; transform: scale(0.995); }
+  50% { opacity: 0.92; transform: scale(1.012); }
+}
+@keyframes surface-revolve {
+  from { background-position: 0% 50%, 0% 50%; }
+  to { background-position: 200% 50%, -160% 50%; }
+}
+@property --aurora-phase {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes aurora-revolve { to { --aurora-phase: 360deg; } }
 @property --ring-phase {
   syntax: '<angle>';
   inherits: false;
@@ -129,19 +145,32 @@ p { text-wrap: pretty; }
 }
 @keyframes ring-revolve { to { --ring-phase: 360deg; } }
 @keyframes rock-orbit { to { offset-distance: 100%; } }
+@keyframes plasma-orbit { to { offset-distance: 100%; } }
+@keyframes plasma-shimmer {
+  0%, 100% { opacity: 0.28; filter: brightness(0.8); }
+  45% { opacity: 0.9; filter: brightness(1.28); }
+  70% { opacity: 0.48; filter: brightness(1); }
+}
+@keyframes horizon-glint-orbit { to { offset-distance: 100%; } }
+@keyframes horizon-glint-pulse {
+  0%, 100% { opacity: 0.2; }
+  28% { opacity: 0.88; }
+  58% { opacity: 0.46; }
+  76% { opacity: 0.76; }
+}
 
 .planet-system {
+  --planet-visual-mask: linear-gradient(90deg, transparent 0%, #000 32%);
   position: absolute;
-  right: clamp(-590px, -40vw, -470px);
+  right: clamp(-360px, -22vw, -250px);
   bottom: clamp(-330px, calc(-440px + 20vh), -280px);
-  width: min(980px, 76vw);
+  width: min(900px, 70vw);
   aspect-ratio: 1;
   opacity: 0.88;
   transform-origin: 53% 56%;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%);
-  mask-image: linear-gradient(90deg, transparent 0%, #000 22%);
   animation: planet-drift 34s ease-in-out infinite;
   transition: opacity 0.6s, filter 0.6s;
+  will-change: transform;
 }
 .planet-system::before {
   position: absolute; inset: 16%; border-radius: 50%; content: '';
@@ -152,11 +181,219 @@ p { text-wrap: pretty; }
   filter: blur(38px);
   animation: planet-aura 9s ease-in-out infinite;
 }
+.planet-system::before,
+.planet-atmosphere,
+.planet,
+.planet-terminator,
+.planet-surface-flow,
+.planet-aurora,
+.orbit-plane {
+  -webkit-mask-image: var(--planet-visual-mask);
+  mask-image: var(--planet-visual-mask);
+}
+.planet-atmosphere {
+  position: absolute;
+  left: 13.4%;
+  top: 10.4%;
+  z-index: 1;
+  width: 75%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 34%, transparent 61%, rgba(217, 188, 144, 0.22) 73%, transparent 75%),
+    radial-gradient(circle at 62% 67%, transparent 63%, rgba(79, 158, 232, 0.3) 73%, transparent 76%);
+  box-shadow:
+    -15px -8px 28px rgba(217, 188, 144, 0.22),
+    17px 16px 30px rgba(64, 145, 224, 0.22),
+    inset 7px 7px 18px rgba(255, 220, 166, 0.09),
+    inset -8px -6px 21px rgba(81, 164, 244, 0.12);
+  filter: blur(1.5px);
+  animation: atmosphere-breathe 8s ease-in-out infinite;
+}
 .planet {
   position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; object-fit: contain;
   filter:
-    drop-shadow(-18px -12px 36px rgba(217, 188, 144, 0.1))
-    drop-shadow(18px 20px 44px rgba(61, 103, 154, 0.13));
+    drop-shadow(-18px -12px 36px rgba(217, 188, 144, 0.16))
+    drop-shadow(18px 20px 44px rgba(61, 128, 208, 0.2));
+}
+.planet-terminator,
+.planet-surface-flow {
+  position: absolute;
+  left: 14%;
+  top: 11%;
+  z-index: 2;
+  width: 74%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+.planet-terminator {
+  background:
+    radial-gradient(circle at 19% 26%, rgba(104, 180, 255, 0.12), transparent 34%),
+    radial-gradient(circle at 80% 55%, transparent 53%, rgba(174, 63, 20, 0.12) 72%, transparent 78%);
+  box-shadow:
+    inset 16px 2px 28px rgba(95, 174, 246, 0.08),
+    inset -22px -4px 34px rgba(166, 60, 20, 0.11);
+  mix-blend-mode: screen;
+}
+.planet-surface-flow {
+  opacity: 0.22;
+  background-image:
+    repeating-linear-gradient(
+      104deg,
+      transparent 0 8%,
+      rgba(122, 187, 239, 0.12) 11%,
+      transparent 15% 25%
+    ),
+    repeating-linear-gradient(
+      82deg,
+      transparent 0 13%,
+      rgba(238, 204, 151, 0.1) 17%,
+      transparent 21% 33%
+    );
+  background-size: 190% 100%, 230% 100%;
+  mix-blend-mode: screen;
+  filter: blur(5px);
+  animation: surface-revolve 58s linear infinite;
+}
+.planet-aurora {
+  --aurora-phase: 0deg;
+  position: absolute;
+  left: 13.5%;
+  top: 10.5%;
+  z-index: 3;
+  width: 75%;
+  aspect-ratio: 1;
+  padding: 2px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from var(--aurora-phase),
+    transparent 0deg 42deg,
+    rgba(107, 176, 235, 0.72) 58deg,
+    transparent 82deg 174deg,
+    rgba(231, 202, 157, 0.62) 198deg,
+    transparent 224deg 310deg,
+    rgba(86, 142, 202, 0.4) 326deg,
+    transparent 350deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter:
+    blur(0.5px)
+    drop-shadow(0 0 8px rgba(89, 160, 225, 0.42))
+    drop-shadow(0 0 12px rgba(217, 188, 144, 0.22));
+  opacity: 0.66;
+  animation: aurora-revolve 43s linear infinite;
+}
+.planet-horizon-glint {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  width: 34px;
+  height: 3px;
+  border-radius: 999px;
+  color: #e8cfa7;
+  background: linear-gradient(90deg, transparent 0%, currentColor 72%, #fff 100%);
+  box-shadow:
+    0 0 9px rgba(232, 207, 167, 0.72),
+    0 0 22px rgba(101, 167, 226, 0.28);
+  offset-path: ellipse(37% 37% at 51.2% 47.9%);
+  offset-distance: 0%;
+  offset-rotate: auto 180deg;
+  animation:
+    horizon-glint-orbit 46s linear -29s infinite,
+    horizon-glint-pulse 10.5s ease-in-out -3s infinite;
+}
+.planet-horizon-glint::after {
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  content: '';
+  background: #fff;
+  box-shadow: 0 0 9px currentColor, 0 0 17px currentColor;
+  transform: translateY(-50%);
+}
+.plasma-orbits {
+  position: absolute;
+  inset: -7%;
+}
+.plasma-orbits-back { z-index: 1; }
+.plasma-orbits-front { z-index: 4; }
+.plasma-plane {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 51%;
+}
+.plasma-plane-a { transform: rotate(54deg); }
+.plasma-plane-b { transform: rotate(-58deg) scale(0.92); opacity: 0.56; }
+.plasma-plane-front {
+  clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+}
+.plasma-track {
+  --ring-phase: 0deg;
+  position: absolute;
+  left: 4%;
+  top: 39%;
+  width: 92%;
+  height: 23%;
+  padding: 1.8px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from var(--ring-phase),
+    rgba(114, 174, 229, 0.7) 0deg 0.7deg,
+    transparent 1.1deg 4.8deg,
+    rgba(225, 196, 151, 0.52) 5.2deg 5.8deg,
+    transparent 6.2deg 10deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.68;
+  filter:
+    drop-shadow(0 0 4px rgba(101, 157, 211, 0.36))
+    drop-shadow(0 0 7px rgba(217, 188, 144, 0.16));
+  animation: ring-revolve 67s linear infinite;
+}
+.plasma-plane-b .plasma-track {
+  animation-duration: 89s;
+  animation-direction: reverse;
+}
+.plasma-spark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--spark-length);
+  height: 3.2px;
+  border-radius: 999px;
+  color: var(--spark-color);
+  background: linear-gradient(90deg, transparent, currentColor 72%, #fff 100%);
+  box-shadow:
+    0 0 7px currentColor,
+    0 0 14px color-mix(in srgb, currentColor 55%, transparent);
+  offset-path: ellipse(46% 11.5% at 50% 50.5%);
+  offset-distance: 0%;
+  offset-rotate: auto 180deg;
+  animation:
+    plasma-orbit var(--spark-time) linear var(--spark-delay) infinite,
+    plasma-shimmer 5.8s ease-in-out var(--spark-delay) infinite;
+}
+.plasma-spark::after {
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  content: '';
+  background: #fff;
+  box-shadow:
+    0 0 7px currentColor,
+    0 0 13px currentColor;
+  transform: translateY(-50%);
 }
 .orbit-plane {
   position: absolute;
@@ -729,12 +966,11 @@ pre.gitdol-code .line.cal-note {
 @media (max-width: 900px) {
   :root { --rail-w: 0px; }
   .planet-system {
+    --planet-visual-mask: linear-gradient(90deg, transparent 0%, transparent 12%, #000 38%);
     right: -440px;
     bottom: -220px;
     width: 680px;
     opacity: 0.36;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 12%, #000 38%);
-    mask-image: linear-gradient(90deg, transparent 0%, transparent 12%, #000 38%);
   }
   .sky.quiet .planet-system { opacity: 0.18; }
   .shell { flex-direction: column; }
