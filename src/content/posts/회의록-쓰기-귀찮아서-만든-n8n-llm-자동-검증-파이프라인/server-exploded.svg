@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 960 735" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="server-exploded-title server-exploded-desc" id="server-exploded-root">
+  <defs>
+      <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;family=Noto+Serif:ital@0;1&amp;family=Noto+Sans+KR:wght@400;500;600&amp;family=Noto+Serif+KR:wght@400&amp;family=Noto+Sans+TC:wght@400;500;600&amp;family=Noto+Serif+TC:wght@400&amp;display=swap');
+      #server-exploded-root { --color-paper:   #f4f8fd;
+      --color-ink:     #1b2a41;
+      --color-muted:   #46607f;
+      --color-accent:  #2563eb;
+      --color-link:    #0e7490;
+      --font-sans:     'Geist', 'Noto Sans KR', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', 'Noto Serif', 'Noto Serif KR', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace; }
+      #server-exploded-root { font-family: var(--font-sans); color: var(--color-ink); }
+      #server-exploded-root .diagram-container { width: 100%; overflow-x: auto; }
+      #server-exploded-root .diagram-container { overflow-x: visible; }</style>
+  </defs>
+        <title id="server-exploded-title">서버 한 대에 올라간 것</title>
+        <desc id="server-exploded-desc">Oracle A1 서버 한 대를 세 층으로 분해한 그림: 바닥은 SSH만 열린 VM, 가운데는 녹음과 녹취가 7일 남는 볼륨 두 개, 위는 녹음 봇과 n8n 컨테이너다.</desc>
+<rect width="100%" height="100%" fill="#f4f8fd"/>
+<g data-exploded="" data-origin="268 438" data-gap="172">
+<line data-role="trace" x1="73.86" y1="538" x2="73.86" y2="158" stroke="#1b2a41" stroke-opacity="0.3" stroke-width="0.8" stroke-dasharray="4,3"/>
+<line data-role="trace" x1="518.14" y1="566" x2="518.14" y2="186" stroke="#1b2a41" stroke-opacity="0.3" stroke-width="0.8" stroke-dasharray="4,3"/>
+<g data-part="vm" data-name="Oracle A1 VM" data-rect="0 0 256 200 10" data-z="0" data-t="20" data-level="0">
+<path data-role="silhouette" d="M 73.86 518 A 14.14 7.07 0 0 1 78 513 L 258 423 A 14.14 7.07 0 0 1 278 423 L 514 541 A 14.14 7.07 0 0 1 518.14 546 L 518.14 566 A 14.14 7.07 0 0 1 514 571 L 334 661 A 14.14 7.07 0 0 1 314 661 L 78 543 A 14.14 7.07 0 0 1 73.86 538 Z" fill="#ffffff"/>
+<path d="M 278 423 L 514 541 A 14.14 7.07 0 0 1 514 551 L 334 641 A 14.14 7.07 0 0 1 314 641 L 78 523 A 14.14 7.07 0 0 1 78 513 L 258 423 A 14.14 7.07 0 0 1 278 423 Z" fill="#1b2a41" fill-opacity="0.03"/>
+<path d="M 73.86 518 A 14.14 7.07 0 0 0 78 523 L 314 641 A 14.14 7.07 0 0 0 324 643.07 L 324 663.07 A 14.14 7.07 0 0 1 314 661 L 78 543 A 14.14 7.07 0 0 1 73.86 538 Z" fill="#1b2a41" fill-opacity="0.08"/>
+<path d="M 324 643.07 A 14.14 7.07 0 0 0 334 641 L 514 551 A 14.14 7.07 0 0 0 518.14 546 L 518.14 566 A 14.14 7.07 0 0 1 514 571 L 334 661 A 14.14 7.07 0 0 1 324 663.07 Z" fill="#1b2a41" fill-opacity="0.16"/>
+<path d="M 320 604 L 344 616 A 5.66 2.83 0 0 1 344 620 L 320 632 A 5.66 2.83 0 0 1 312 632 L 288 620 A 5.66 2.83 0 0 1 288 616 L 312 604 A 5.66 2.83 0 0 1 320 604 Z" fill="none" stroke="#1b2a41" stroke-opacity="0.45" stroke-width="0.8"/>
+<path d="M 73.86 518 A 14.14 7.07 0 0 0 78 523 L 314 641 A 14.14 7.07 0 0 0 324 643.07 A 14.14 7.07 0 0 0 334 641 L 514 551 A 14.14 7.07 0 0 0 518.14 546" fill="none" stroke="#1b2a41" stroke-opacity="0.55" stroke-width="0.8"/>
+<path d="M 73.86 518 A 14.14 7.07 0 0 1 78 513 L 258 423 A 14.14 7.07 0 0 1 278 423 L 514 541 A 14.14 7.07 0 0 1 518.14 546 L 518.14 566 A 14.14 7.07 0 0 1 514 571 L 334 661 A 14.14 7.07 0 0 1 314 661 L 78 543 A 14.14 7.07 0 0 1 73.86 538 Z" fill="none" stroke="#1b2a41" stroke-width="1.2" stroke-linejoin="round"/>
+<g data-role="label">
+<line data-role="leader" x1="524.14" y1="556" x2="652" y2="556" stroke="#1b2a41" stroke-opacity="0.4" stroke-width="0.8"/>
+<circle cx="518.14" cy="556" r="2" fill="#1b2a41"/>
+<text data-role="name" x="664" y="555" fill="#1b2a41" font-size="16" font-weight="600" font-family="'Geist', sans-serif">Oracle A1 VM</text>
+<text x="664" y="571" fill="#46607f" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">arm64 · inbound SSH:22 only</text>
+</g>
+</g>
+<g data-part="volumes" data-name="볼륨 2개" data-rect="16 16 240 184 8" data-z="192" data-t="16" data-level="1" data-focal="">
+<path data-role="silhouette" d="M 104.69 330 A 11.31 5.66 0 0 1 108 326 L 260 250 A 11.31 5.66 0 0 1 276 250 L 484 354 A 11.31 5.66 0 0 1 487.31 358 L 487.31 374 A 11.31 5.66 0 0 1 484 378 L 332 454 A 11.31 5.66 0 0 1 316 454 L 108 350 A 11.31 5.66 0 0 1 104.69 346 Z" fill="#ffffff"/>
+<path d="M 276 250 L 484 354 A 11.31 5.66 0 0 1 484 362 L 332 438 A 11.31 5.66 0 0 1 316 438 L 108 334 A 11.31 5.66 0 0 1 108 326 L 260 250 A 11.31 5.66 0 0 1 276 250 Z" fill="#2563eb" fill-opacity="0.1"/>
+<path d="M 104.69 330 A 11.31 5.66 0 0 0 108 334 L 316 438 A 11.31 5.66 0 0 0 324 439.66 L 324 455.66 A 11.31 5.66 0 0 1 316 454 L 108 350 A 11.31 5.66 0 0 1 104.69 346 Z" fill="#2563eb" fill-opacity="0.2"/>
+<path d="M 324 439.66 A 11.31 5.66 0 0 0 332 438 L 484 362 A 11.31 5.66 0 0 0 487.31 358 L 487.31 374 A 11.31 5.66 0 0 1 484 378 L 332 454 A 11.31 5.66 0 0 1 324 455.66 Z" fill="#2563eb" fill-opacity="0.32"/>
+<path d="M 272 264 L 352 304 A 5.66 2.83 0 0 1 352 308 L 224 372 A 5.66 2.83 0 0 1 216 372 L 136 332 A 5.66 2.83 0 0 1 136 328 L 264 264 A 5.66 2.83 0 0 1 272 264 Z" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb" stroke-opacity="0.55" stroke-width="0.8"/>
+<path d="M 376 316 L 456 356 A 5.66 2.83 0 0 1 456 360 L 328 424 A 5.66 2.83 0 0 1 320 424 L 240 384 A 5.66 2.83 0 0 1 240 380 L 368 316 A 5.66 2.83 0 0 1 376 316 Z" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb" stroke-opacity="0.55" stroke-width="0.8"/>
+<path d="M 104.69 330 A 11.31 5.66 0 0 0 108 334 L 316 438 A 11.31 5.66 0 0 0 324 439.66 A 11.31 5.66 0 0 0 332 438 L 484 362 A 11.31 5.66 0 0 0 487.31 358" fill="none" stroke="#2563eb" stroke-opacity="0.7" stroke-width="0.8"/>
+<path d="M 104.69 330 A 11.31 5.66 0 0 1 108 326 L 260 250 A 11.31 5.66 0 0 1 276 250 L 484 354 A 11.31 5.66 0 0 1 487.31 358 L 487.31 374 A 11.31 5.66 0 0 1 484 378 L 332 454 A 11.31 5.66 0 0 1 316 454 L 108 350 A 11.31 5.66 0 0 1 104.69 346 Z" fill="none" stroke="#2563eb" stroke-width="1.2" stroke-linejoin="round"/>
+<g data-role="label">
+<line data-role="leader" x1="493.31" y1="366" x2="652" y2="366" stroke="#2563eb" stroke-opacity="0.6" stroke-width="0.8"/>
+<circle cx="487.31" cy="366" r="2" fill="#2563eb"/>
+<text data-role="name" x="664" y="365" fill="#1b2a41" font-size="16" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">볼륨 2개</text>
+<text x="664" y="381" fill="#2563eb" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">recordings · n8n_data</text>
+</g>
+</g>
+<g data-part="containers" data-name="컨테이너 2개" data-rect="16 16 240 184 8" data-z="380" data-t="28" data-level="2">
+<path data-role="silhouette" d="M 104.69 130 A 11.31 5.66 0 0 1 108 126 L 260 50 A 11.31 5.66 0 0 1 276 50 L 484 154 A 11.31 5.66 0 0 1 487.31 158 L 487.31 186 A 11.31 5.66 0 0 1 484 190 L 332 266 A 11.31 5.66 0 0 1 316 266 L 108 162 A 11.31 5.66 0 0 1 104.69 158 Z" fill="#ffffff"/>
+<path d="M 276 50 L 484 154 A 11.31 5.66 0 0 1 484 162 L 332 238 A 11.31 5.66 0 0 1 316 238 L 108 134 A 11.31 5.66 0 0 1 108 126 L 260 50 A 11.31 5.66 0 0 1 276 50 Z" fill="#1b2a41" fill-opacity="0.03"/>
+<path d="M 104.69 130 A 11.31 5.66 0 0 0 108 134 L 316 238 A 11.31 5.66 0 0 0 324 239.66 L 324 267.66 A 11.31 5.66 0 0 1 316 266 L 108 162 A 11.31 5.66 0 0 1 104.69 158 Z" fill="#1b2a41" fill-opacity="0.08"/>
+<path d="M 324 239.66 A 11.31 5.66 0 0 0 332 238 L 484 162 A 11.31 5.66 0 0 0 487.31 158 L 487.31 186 A 11.31 5.66 0 0 1 484 190 L 332 266 A 11.31 5.66 0 0 1 324 267.66 Z" fill="#1b2a41" fill-opacity="0.16"/>
+<path d="M 272 64 L 352 104 A 5.66 2.83 0 0 1 352 108 L 224 172 A 5.66 2.83 0 0 1 216 172 L 136 132 A 5.66 2.83 0 0 1 136 128 L 264 64 A 5.66 2.83 0 0 1 272 64 Z" fill="none" stroke="#1b2a41" stroke-opacity="0.45" stroke-width="0.8"/>
+<path d="M 376 116 L 456 156 A 5.66 2.83 0 0 1 456 160 L 328 224 A 5.66 2.83 0 0 1 320 224 L 240 184 A 5.66 2.83 0 0 1 240 180 L 368 116 A 5.66 2.83 0 0 1 376 116 Z" fill="none" stroke="#1b2a41" stroke-opacity="0.45" stroke-width="0.8"/>
+<path d="M 262 79 L 322 109 A 2.83 1.41 0 0 1 322 111 L 314 115 A 2.83 1.41 0 0 1 310 115 L 250 85 A 2.83 1.41 0 0 1 250 83 L 258 79 A 2.83 1.41 0 0 1 262 79 Z" fill="none" stroke="#1b2a41" stroke-opacity="0.45" stroke-width="0.8"/>
+<path d="M 238 91 L 286 115 A 2.83 1.41 0 0 1 286 117 L 278 121 A 2.83 1.41 0 0 1 274 121 L 226 97 A 2.83 1.41 0 0 1 226 95 L 234 91 A 2.83 1.41 0 0 1 238 91 Z" fill="none" stroke="#1b2a41" stroke-opacity="0.45" stroke-width="0.8"/>
+<path d="M 214 103 L 274 133 A 2.83 1.41 0 0 1 274 135 L 266 139 A 2.83 1.41 0 0 1 262 139 L 202 109 A 2.83 1.41 0 0 1 202 107 L 210 103 A 2.83 1.41 0 0 1 214 103 Z" fill="none" stroke="#1b2a41" stroke-opacity="0.45" stroke-width="0.8"/>
+<path d="M 190 115 L 238 139 A 2.83 1.41 0 0 1 238 141 L 230 145 A 2.83 1.41 0 0 1 226 145 L 178 121 A 2.83 1.41 0 0 1 178 119 L 186 115 A 2.83 1.41 0 0 1 190 115 Z" fill="none" stroke="#1b2a41" stroke-opacity="0.45" stroke-width="0.8"/>
+<path d="M 371 129.5 L 429 158.5 A 4.24 2.12 0 0 1 429 161.5 L 379 186.5 A 4.24 2.12 0 0 1 373 186.5 L 315 157.5 A 4.24 2.12 0 0 1 315 154.5 L 365 129.5 A 4.24 2.12 0 0 1 371 129.5 Z" fill="none" stroke="#1b2a41" stroke-opacity="0.45" stroke-width="0.8"/>
+<path d="M 303 163.5 L 361 192.5 A 4.24 2.12 0 0 1 361 195.5 L 331 210.5 A 4.24 2.12 0 0 1 325 210.5 L 267 181.5 A 4.24 2.12 0 0 1 267 178.5 L 297 163.5 A 4.24 2.12 0 0 1 303 163.5 Z" fill="none" stroke="#1b2a41" stroke-opacity="0.45" stroke-width="0.8"/>
+<path d="M 104.69 130 A 11.31 5.66 0 0 0 108 134 L 316 238 A 11.31 5.66 0 0 0 324 239.66 A 11.31 5.66 0 0 0 332 238 L 484 162 A 11.31 5.66 0 0 0 487.31 158" fill="none" stroke="#1b2a41" stroke-opacity="0.55" stroke-width="0.8"/>
+<path d="M 104.69 130 A 11.31 5.66 0 0 1 108 126 L 260 50 A 11.31 5.66 0 0 1 276 50 L 484 154 A 11.31 5.66 0 0 1 487.31 158 L 487.31 186 A 11.31 5.66 0 0 1 484 190 L 332 266 A 11.31 5.66 0 0 1 316 266 L 108 162 A 11.31 5.66 0 0 1 104.69 158 Z" fill="none" stroke="#1b2a41" stroke-width="1.2" stroke-linejoin="round"/>
+<g data-role="label">
+<line data-role="leader" x1="493.31" y1="172" x2="652" y2="172" stroke="#1b2a41" stroke-opacity="0.4" stroke-width="0.8"/>
+<circle cx="487.31" cy="172" r="2" fill="#1b2a41"/>
+<text data-role="name" x="664" y="171" fill="#1b2a41" font-size="16" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">컨테이너 2개</text>
+<text x="664" y="187" fill="#46607f" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">recorder · n8n 2.42.6</text>
+</g>
+</g>
+</g>
+<line x1="40" y1="687" x2="920" y2="687" stroke="#1b2a41" stroke-opacity="0.1" stroke-width="0.8"/>
+<text x="40" y="707" fill="#46607f" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.18em">FOCAL</text>
+<text x="96" y="708" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">서버에서 녹음과 녹취가 남는 곳은 이 두 볼륨뿐이고, 둘 다 7일 뒤 지워진다.</text>
+      </svg>

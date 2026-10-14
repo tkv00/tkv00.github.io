@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 960 664" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="evidence-check-title evidence-check-desc" id="evidence-check-root">
+  <defs>
+      <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;family=Noto+Serif:ital@0;1&amp;family=Noto+Sans+KR:wght@400;500;600&amp;family=Noto+Serif+KR:wght@400&amp;family=Noto+Sans+TC:wght@400;500;600&amp;family=Noto+Serif+TC:wght@400&amp;display=swap');
+      #evidence-check-root { --color-paper:   #f4f8fd;
+      --color-ink:     #1b2a41;
+      --color-muted:   #46607f;
+      --color-accent:  #2563eb;
+      --color-link:    #0e7490;
+      --font-sans:     'Geist', 'Noto Sans KR', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', 'Noto Serif', 'Noto Serif KR', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace; }
+      #evidence-check-root { font-family: var(--font-sans); color: var(--color-ink); }
+      #evidence-check-root .diagram-container { width: 100%; overflow-x: auto; }
+      #evidence-check-root .diagram-container { overflow-x: visible; }</style>
+  </defs>
+        <title id="evidence-check-title">근거 검증: 통과하는 초안과 멈추는 초안</title>
+        <desc id="evidence-check-desc">같은 여섯 가지 근거 검증 규칙을 두 초안에 적용한 비교: 초안 A는 모두 통과해 승인 버튼과 함께 게시되고, 초안 B는 3번 녹취 시각 규칙에서 처음 갈려 draftOk가 false가 되어 ClickUp에 쓰지 않는다.</desc>
+<rect width="960" height="700" fill="#f4f8fd"/>
+<line x1="560" y1="96" x2="560" y2="544" stroke="#1b2a41" stroke-opacity="0.3" stroke-width="1"/>
+<line x1="800" y1="96" x2="800" y2="544" stroke="#1b2a41" stroke-opacity="0.3" stroke-width="1"/>
+<text x="40" y="72" fill="#46607f" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.18em">ORDERED RULES</text>
+<text x="40" y="92" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">초안 검증과 수정 검증이 같은 코드(verifyDraft)를 쓴다</text>
+<rect x="456" y="40" width="208" height="56" rx="6" fill="#f4f8fd"/>
+<rect x="456" y="40" width="208" height="56" rx="6" fill="#ffffff" stroke="#1b2a41" stroke-width="1"/>
+<text x="560" y="64" fill="#1b2a41" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">초안 A</text>
+<text x="560" y="84" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">근거가 모두 입력에 있음</text>
+<rect x="696" y="40" width="208" height="56" rx="6" fill="#f4f8fd"/>
+<rect x="696" y="40" width="208" height="56" rx="6" fill="#ffffff" stroke="#1b2a41" stroke-width="1"/>
+<text x="800" y="64" fill="#1b2a41" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">초안 B</text>
+<text x="800" y="84" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">녹취에 없는 시각을 근거로 씀</text>
+<rect x="40" y="116" width="880" height="56" rx="4" fill="#1b2a41" fill-opacity="0.02" stroke="#1b2a41" stroke-opacity="0.08" stroke-width="0.8"/>
+<text x="56" y="139" fill="#1b2a41" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">1 · 템플릿 구조</text>
+<text x="56" y="159" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">## 제목, 필드 표 첫 열, 액션 아이템 머리글이 같다</text>
+<rect x="472.0" y="124.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="560" y="148.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="712.0" y="124.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="800" y="148.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="40" y="180" width="880" height="56" rx="4" fill="#1b2a41" fill-opacity="0.02" stroke="#1b2a41" stroke-opacity="0.08" stroke-width="0.8"/>
+<text x="56" y="203" fill="#1b2a41" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">2 · 근거 형식</text>
+<text x="56" y="223" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">결정마다 “이유: … (근거: …)” 형식을 지킨다</text>
+<rect x="472.0" y="188.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="560" y="212.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="712.0" y="188.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="800" y="212.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="40" y="244" width="880" height="56" rx="4" fill="#1b2a41" fill-opacity="0.02" stroke="#1b2a41" stroke-opacity="0.08" stroke-width="0.8"/>
+<text x="56" y="267" fill="#1b2a41" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">3 · 녹취 시각</text>
+<text x="56" y="287" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">근거 시각이 발화 줄의 [HH:MM:SS]에 있다</text>
+<rect x="472.0" y="252.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="560" y="276.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="712.0" y="248.0" width="176" height="48" rx="4" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb" stroke-width="1.2"/>
+<text x="800" y="267.0" fill="#2563eb" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">× FAIL</text>
+<text x="800" y="286.0" fill="#2563eb" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">녹취 00:41:10 없음</text>
+<rect x="40" y="336" width="880" height="56" rx="4" fill="#1b2a41" fill-opacity="0.02" stroke="#1b2a41" stroke-opacity="0.08" stroke-width="0.8"/>
+<text x="56" y="359" fill="#1b2a41" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">4 · Discord 링크</text>
+<text x="56" y="379" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">근거 링크가 수집한 결정 메시지의 링크다</text>
+<rect x="472.0" y="344.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="560" y="368.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="712.0" y="344.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="800" y="368.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="40" y="400" width="880" height="56" rx="4" fill="#1b2a41" fill-opacity="0.02" stroke="#1b2a41" stroke-opacity="0.08" stroke-width="0.8"/>
+<text x="56" y="423" fill="#1b2a41" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">5 · 결정 메시지 사용</text>
+<text x="56" y="443" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">수집한 결정 메시지가 모두 근거로 쓰였다</text>
+<rect x="472.0" y="408.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="560" y="432.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="712.0" y="408.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="800" y="432.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="40" y="464" width="880" height="56" rx="4" fill="#1b2a41" fill-opacity="0.02" stroke="#1b2a41" stroke-opacity="0.08" stroke-width="0.8"/>
+<text x="56" y="487" fill="#1b2a41" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">6 · 자리표시자</text>
+<text x="56" y="507" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">&lt;…&gt; 자리표시자가 남지 않았다</text>
+<rect x="472.0" y="472.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="560" y="496.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<rect x="712.0" y="472.0" width="176" height="40" rx="4" fill="#ffffff" stroke="#46607f" stroke-width="1"/>
+<text x="800" y="496.0" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">✓ PASS</text>
+<path d="M 640.0,296 V 306 H 720.0 V 296" fill="none" stroke="#46607f" stroke-width="1"/>
+<rect x="624.0" y="308" width="112" height="16" rx="2" fill="#f4f8fd"/>
+<text x="680.0" y="320" fill="#46607f" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">처음 갈리는 규칙</text>
+<rect x="456" y="544" width="208" height="56" rx="6" fill="#1b2a41" stroke="#1b2a41" stroke-width="1"/>
+<text x="560" y="566" fill="#f4f8fd" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">draftOk: true</text>
+<text x="560" y="586" fill="#f4f8fd" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">초안과 승인 버튼 게시</text>
+<rect x="696" y="544" width="208" height="56" rx="6" fill="#f4f8fd"/>
+<rect x="696" y="544" width="208" height="56" rx="6" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb" stroke-width="1.2"/>
+<text x="800" y="566" fill="#2563eb" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">draftOk: false</text>
+<text x="800" y="586" fill="#1b2a41" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">알림만, ClickUp에 안 씀</text>
+<text x="56" y="568" fill="#46607f" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.18em">OUTCOME</text>
+<text x="56" y="588" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">실패해도 실행은 성공으로 끝나고 개수만 알린다</text>
+<line x1="40" y1="620" x2="920" y2="620" stroke="#1b2a41" stroke-opacity="0.12" stroke-width="0.8"/>
+<text x="40" y="640" fill="#1b2a41" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace">✓ PASS</text>
+<text x="112" y="640" fill="#2563eb" font-size="10" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace">× FAIL</text>
+<text x="184" y="641" fill="#46607f" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">규칙은 모두 검사하고 오류를 종류별로 센다. 초안 B의 오류: 녹취에 없는 시각 1개</text>
+      </svg>

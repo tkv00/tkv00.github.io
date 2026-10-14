@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { allPosts, tagCloud } from '../../lib/posts.mjs';
+import { allPosts, tagCloud, tagHref } from '../../lib/posts.mjs';
 import { site } from '../../site.config.mjs';
 
 const posts = await allPosts();
@@ -17,7 +17,7 @@ const year = new Date().getFullYear();
 
     <div class="cloud">
       {cloud.map(([tag, n]) => (
-        <a href={`/tags/${encodeURIComponent(tag)}`}>{tag}<span>{n}</span></a>
+        <a href={tagHref(tag)}>{tag}<span>{n}</span></a>
       ))}
     </div>
 

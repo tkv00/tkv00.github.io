@@ -1,14 +1,15 @@
 ---
 import { getCollection } from 'astro:content';
-import { site, author, nav, projectOrder, analytics } from '../site.config.mjs';
+import { site, author, nav, projectOrder, categories as configuredCategories, analytics } from '../site.config.mjs';
+import { tagHref } from '../lib/posts.mjs';
 
 const { path = '/' } = Astro.props;
 
 const posts = (await getCollection('posts')).filter((p) => !p.data.draft);
 
 /** 프로젝트·카테고리별 글 수를 센다. 설정에 적힌 순서를 먼저 따르고, 나머지는 많은 순. */
-const tally = (key) => {
-  const m = new Map();
+const tally = (key, names) => {
+  const m = new Map(names.map((name) => [name, 0]));
   for (const p of posts) {
     const v = p.data[key];
     if (v) m.set(v, (m.get(v) ?? 0) + 1);
@@ -16,13 +17,13 @@ const tally = (key) => {
   return [...m.entries()];
 };
 
-const projects = tally('project').sort((a, b) => {
+const projects = tally('project', projectOrder).sort((a, b) => {
   const ia = projectOrder.indexOf(a[0]);
   const ib = projectOrder.indexOf(b[0]);
   if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
   return b[1] - a[1];
 });
-const categories = tally('category').sort((a, b) => b[1] - a[1]);
+const categories = tally('category', configuredCategories).sort((a, b) => b[1] - a[1]);
 
 const here = (href) => (href === '/' ? path === '/' : path.startsWith(href));
 ---
@@ -98,7 +99,7 @@ const here = (href) => (href === '/' ? path === '/' : path.startsWith(href));
     <nav class="group">
       <h3>프로젝트</h3>
       {projects.map(([name, n]) => (
-        <a class="cat" href={`/tags/${encodeURIComponent(name)}`}>
+        <a class="cat" href={tagHref(name)}>
           <b>{name}</b><span>{n}</span>
         </a>
       ))}
@@ -109,7 +110,7 @@ const here = (href) => (href === '/' ? path === '/' : path.startsWith(href));
     <nav class="group">
       <h3>카테고리</h3>
       {categories.map(([name, n]) => (
-        <a class="cat" href={`/tags/${encodeURIComponent(name)}`}>
+        <a class="cat" href={tagHref(name)}>
           <b>{name}</b><span>{n}</span>
         </a>
       ))}

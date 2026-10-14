@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content';
+import { projectOrder, categories, tagSlugs } from '../site.config.mjs';
 
 /** 발행된 글만, 최신순으로. */
 export async function allPosts() {
@@ -13,6 +14,8 @@ export function neighbors(posts, id) {
 }
 
 export const href = (post) => `/posts/${post.id}`;
+export const tagSlug = (tag) => tagSlugs[tag] ?? tag;
+export const tagHref = (tag) => `/tags/${encodeURIComponent(tagSlug(tag))}`;
 
 const fmt = new Intl.DateTimeFormat('ko-KR', {
   year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Seoul',
@@ -46,9 +49,9 @@ export function summary(post, len = 150) {
   return t.length > len ? t.slice(0, len).trimEnd() + '…' : t;
 }
 
-/** 태그 + 프로젝트 + 카테고리를 한 바구니에 담아 센다. */
+/** 태그 + 프로젝트 + 카테고리를 센다. 설정한 항목은 글이 없어도 포함한다. */
 export function tagCloud(posts) {
-  const m = new Map();
+  const m = new Map([...projectOrder, ...categories].map((name) => [name, 0]));
   for (const p of posts) {
     for (const t of [...p.data.tags, p.data.project, p.data.category].filter(Boolean)) {
       m.set(t, (m.get(t) ?? 0) + 1);

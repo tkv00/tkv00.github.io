@@ -1,13 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostRow from '../../components/PostRow.astro';
-import { allPosts, hasTag, tagCloud } from '../../lib/posts.mjs';
+import { allPosts, hasTag, tagCloud, tagSlug } from '../../lib/posts.mjs';
 import { site } from '../../site.config.mjs';
 
 export async function getStaticPaths() {
   const posts = await allPosts();
   return tagCloud(posts).map(([tag]) => ({
-    params: { tag },
+    params: { tag: tagSlug(tag) },
     props: { tag, items: posts.filter((p) => hasTag(p, tag)) },
   }));
 }
@@ -25,6 +25,7 @@ const year = new Date().getFullYear();
 
     <div class="rows">
       {items.map((p) => <div class="rise"><PostRow post={p} /></div>)}
+      {items.length === 0 && <p class="meta">아직 등록된 글이 없습니다.</p>}
     </div>
 
     <a class="btn rise" href="/tags" style="margin-top:38px;">

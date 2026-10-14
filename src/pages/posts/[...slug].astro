@@ -3,7 +3,7 @@ import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Toc from '../../components/Toc.astro';
 import Comments from '../../components/Comments.astro';
-import { allPosts, day, href, minutes, neighbors, summary } from '../../lib/posts.mjs';
+import { allPosts, day, href, minutes, neighbors, summary, tagHref } from '../../lib/posts.mjs';
 import { site } from '../../site.config.mjs';
 
 export async function getStaticPaths() {
@@ -44,7 +44,7 @@ const editorPreview = import.meta.env.DEV && Astro.url.searchParams.get('editor'
           <a class="lnk" href="/">홈</a>
           <span class="sep">/</span>
           <a class="lnk" href="/posts">글 전체</a>
-          {where && <><span class="sep">/</span><a class="now lnk" href={`/tags/${encodeURIComponent(where)}`}>{where}</a></>}
+          {where && <><span class="sep">/</span><a class="now lnk" href={tagHref(where)}>{where}</a></>}
         </nav>
 
         <h1>{title}</h1>
@@ -59,7 +59,7 @@ const editorPreview = import.meta.env.DEV && Astro.url.searchParams.get('editor'
 
         {tags.length > 0 && (
           <div class="tags">
-            {tags.map((t) => <a class="tag" href={`/tags/${encodeURIComponent(t)}`}>{t}</a>)}
+            {tags.map((t) => <a class="tag" href={tagHref(t)}>{t}</a>)}
           </div>
         )}
       </header>

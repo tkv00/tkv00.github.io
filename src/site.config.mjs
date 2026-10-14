@@ -28,10 +28,16 @@ export const nav = [
   { href: '/about', label: '소개' },
 ];
 
-/** 사이드바 '프로젝트' 순서. 여기 없는 프로젝트는 뒤에 자동으로 붙는다. */
+/** 사이드바 '프로젝트' 순서. 글이 없어도 표시하며, 여기 없는 프로젝트는 뒤에 자동으로 붙는다. */
 export const projectOrder = [
-  'Holliverse', 'Shoot-Pointer', 'WealthTracker', 'Vero', 'Qampus', 'TR1L',
+  'Holliverse', 'Shoot-Pointer', 'WealthTracker', 'Vero', 'Qampus', 'TR1L', 'Qello',
 ];
+
+/** 글이 없어도 사이드바에 표시할 카테고리. */
+export const categories = ['AI/AX 경험'];
+
+/** 경로 구분자가 들어간 이름도 하나의 태그 주소로 연결한다. */
+export const tagSlugs = { 'AI/AX 경험': 'ai-ax-experience' };
 
 /**
  * 댓글 (giscus).
